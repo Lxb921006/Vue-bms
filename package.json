@@ -1,0 +1,40 @@
+{
+  "name": "go-web-mini",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "babel-plugin-component": "^1.1.1",
+    "bus": "^0.1.0",
+    "core-js": "^3.6.5",
+    "element-ui": "^2.15.10",
+    "qrcode": "^1.5.1",
+    "qs": "^6.11.0",
+    "register-service-worker": "^1.7.1",
+    "vue": "^2.6.11",
+    "vue-bus": "^1.2.1",
+    "vue-page-transition": "^0.2.2",
+    "vue-qr": "^4.0.9",
+    "vue-router": "^3.2.0",
+    "vuex": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.15",
+    "@vue/cli-plugin-pwa": "~4.5.15",
+    "@vue/cli-plugin-router": "~4.5.15",
+    "@vue/cli-plugin-vuex": "~4.5.15",
+    "@vue/cli-service": "~4.5.15",
+    "sass": "^1.26.5",
+    "sass-loader": "^8.0.2",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
