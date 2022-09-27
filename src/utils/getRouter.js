@@ -1,23 +1,3 @@
-// export function getRouter(userRouter=[], allRouter = []) {
-//     let userRealRouter = [];
-//     allRouter.forEach((v, i) => {
-//       userRouter.forEach((item, index) => {
-//         if (item.title === v.meta.name) {
-//             v.hidden = true;
-//             console.log(v.meta.name);
-//           if (item.children && item.children.length > 0) {
-//             getRouter(item.children, v.children);
-//           } else {
-//             v.children = [];
-//           }
-//           userRealRouter.push(v);
-//         }
-//       })
-//     });
-//     return userRealRouter;
-//   }
-
-
 export function getRouter(userRouter=[], allRouter = []) {
   let userRealRouter = [];
   for (let ai=0; ai < allRouter.length; ai++) {
