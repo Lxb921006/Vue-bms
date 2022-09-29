@@ -26,7 +26,7 @@
             </el-row>
             <el-row :gutter="10" class="content">
                 <el-col>
-                    <el-button type="success" plain @click="GaLogin()" :loading="submitLoad">确定</el-button>
+                    <el-button type="success" plain @click="GaLogin()" :loading="submitLoad">{{ logintext }}</el-button>
                 </el-col>
             </el-row>
         </el-card>
@@ -48,6 +48,7 @@ export default {
             hidden: true,
             isShowQr:2,
             submitLoad: false,
+            logintext:"确定",
             url: "otpauth://totp/lxb?secret=NR4GEYLMNRQTAMLMNNQWI&issuer=cmdb&algorithm=SHA1&digits=6&period=30",
         }
     },
@@ -59,6 +60,7 @@ export default {
             if (!this.gacode) {
                 return Message.error("请输入谷歌验证码");
             }
+            this.logintext = "确定..."
 
             this.submitLoad = true;
             const resp = await gaLogin({code: this.gacode, user: this.user}, this.callMethod).catch(err => {this.submitLoad = false;});

@@ -10,7 +10,7 @@
                     <el-input @keyup.enter.native="submitForm('ruleForm')" type="password" placeholder="密码" v-model="ruleForm.password" autocomplete="off" prefix-icon="el-icon-lock" show-password></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" :loading="loginLoad" @click.native="submitForm('ruleForm')">登录</el-button>
+                    <el-button type="primary" :loading="loginLoad" @click.native="submitForm('ruleForm')">{{ logintext }}</el-button>
                     <el-button @click="resetForm('ruleForm')">重置</el-button>
                 </el-form-item>
             </el-form>
@@ -39,6 +39,7 @@ export default {
         };
         return {
             loginLoad:false,
+            logintext:"登录",
             ruleForm:{
                 username:"",
                 password:"",
@@ -56,6 +57,7 @@ export default {
     methods:{
         async Login() {
             this.loginLoad = true;
+            this.logintext = "登录..."
             const resp = await login({user: this.ruleForm.username, password: this.ruleForm.password}, this.callMethod).catch(err => {
                 this.loginLoad = false;
             });
