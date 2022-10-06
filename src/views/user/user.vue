@@ -181,14 +181,14 @@
                     <el-input type="name" v-model="ruleForm.name" autocomplete="off" :disabled="true"></el-input>
                 </el-form-item>
                 <el-form-item label="密码" prop="upass">
-                    <el-input type="password" v-model="ruleForm.upass" autocomplete="off"></el-input>
+                    <el-input type="password" v-model="ruleForm.upass" autocomplete="off" clearable></el-input>
                 </el-form-item>
 
                 <el-form-item label="确认密码" prop="urepass">
-                    <el-input type="password" v-model="ruleForm.urepass" autocomplete="off"></el-input>
+                    <el-input type="password" v-model="ruleForm.urepass" autocomplete="off" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="用户组" prop="role">
-                    <el-select v-model="ruleForm.role" placeholder="请选择">
+                    <el-select v-model="ruleForm.role" placeholder="请选择" clearable>
                         <el-option
                             v-for="item in roles"
                             :key="item.ID"
