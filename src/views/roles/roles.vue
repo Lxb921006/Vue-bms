@@ -92,7 +92,7 @@
             >
             <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="角色名" prop="rolename">
-                    <el-input type="text" v-model="ruleForm.rolename" autocomplete="off"></el-input>
+                    <el-input type="text" v-model="ruleForm.rolename" autocomplete="off" clearable></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">

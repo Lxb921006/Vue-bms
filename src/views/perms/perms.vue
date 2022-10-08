@@ -57,16 +57,16 @@
             >
             <el-form :model="ruleForm" status-icon label-position="right" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="路径" prop="path">
-                    <el-input type="name" v-model="ruleForm.path" autocomplete="off" ></el-input>
+                    <el-input type="name" v-model="ruleForm.path" autocomplete="off" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="菜单名" prop="title">
-                    <el-input type="name" v-model="ruleForm.title" autocomplete="off" ></el-input>
+                    <el-input type="name" v-model="ruleForm.title" autocomplete="off" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="父id" prop="parentId">
-                    <el-input type="name" v-model="ruleForm.parentId" autocomplete="off" ></el-input>
+                    <el-input type="name" v-model="ruleForm.parentId" autocomplete="off" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="菜单等级" prop="level">
-                    <el-input type="number" v-model="ruleForm.level" autocomplete="off" ></el-input>
+                    <el-input type="number" v-model="ruleForm.level" autocomplete="off" clearable></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
