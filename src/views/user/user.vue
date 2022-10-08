@@ -117,20 +117,20 @@
             >
             <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="用户名" prop="name">
-                    <el-input type="text" v-model="ruleForm.name" autocomplete="off"></el-input>
+                    <el-input type="text" v-model="ruleForm.name" autocomplete="off" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="邮箱" prop="email">
-                    <el-input type="email" v-model="ruleForm.email" autocomplete="off"></el-input>
+                    <el-input type="email" v-model="ruleForm.email" autocomplete="off" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="手机号" prop="tel">
-                    <el-input type="number" v-model="ruleForm.tel" autocomplete="off"></el-input>
+                    <el-input type="number" v-model="ruleForm.tel" autocomplete="off" clearable></el-input>
                 </el-form-item>
 
                 <el-form-item label="密码" prop="pass">
-                    <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+                    <el-input type="password" v-model="ruleForm.pass" autocomplete="off" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="确认密码" prop="repass">
-                    <el-input type="password" v-model="ruleForm.repass" autocomplete="off"></el-input>
+                    <el-input type="password" v-model="ruleForm.repass" autocomplete="off" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="用户组" prop="role">
                     <el-select v-model="ruleForm.role" placeholder="请选择" clearable>
