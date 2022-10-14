@@ -69,6 +69,7 @@ export default {
             sessionStorage.setItem("uid", resp.data.data.uid);
             this.$router.replace('/').catch((err) => err);
             this.submitLoad = false;
+            this.logintext = "确定"
         },
         callMethod() {},
 
