@@ -86,12 +86,13 @@ export default {
 
 <style lang="scss" scoped>
 .box {
-    margin: 150px auto;
-    width: 400px;
+    padding-top: 150px;
+    height: 100%;
+    background-color: #e9e9e9;
 }
 .title {
     position: relative;
-    width: 398px;
+    width: 400px;
     height: 45px;
     line-height: 45px;
     color: #fff;
@@ -108,5 +109,9 @@ export default {
 }
 :deep .el-button--success.is-plain {
     width: 100%;
+}
+.el-card {
+    width: 400px;
+    margin: 0 auto;
 }
 </style>
