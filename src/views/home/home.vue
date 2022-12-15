@@ -135,7 +135,7 @@ export default {
         async logout() {
             var params = new URLSearchParams();
             params.append('user', this.user);
-            await logout(params, this.callMethod);
+            await logout(params, sessionStorage.getItem("user"), this.callMethod);
             sessionStorage.clear();
             store.commit('CLEAR_PERMISSION', null);
             location.reload();

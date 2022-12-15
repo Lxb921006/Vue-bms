@@ -1,12 +1,12 @@
-import { get, post } from '../utils/http'
+import { get, post, loginPost } from '../utils/http'
 
 export const addUsers = (params, method) => post("/user/add?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const delUsers = (params, method) => post("/user/del?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const createPerms = (params, method) => post("/perms/create?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const delPerms = (params, method) => post("/perms/delete?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
-export const login = (params, method) => post('/login', params, method);
-export const gaLogin = (params, method) => post('/galogin', params, method);
-export const logout = (params, method) => post('/logout', params, method);
+export const login = (params, query, method) => loginPost('/login', params, query, method);
+export const gaLogin = (params, query, method) => loginPost('/galogin', params, query, method);
+export const logout = (params, query, method) => loginPost('/logout', params, query, method);
 export const updateUsers = (params, method) => post("/user/update?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const removePerms = (params, method) => post("/role/rmperms?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const allotPerms = (params, method) => post("/role/allotperms?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);

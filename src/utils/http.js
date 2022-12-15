@@ -72,3 +72,16 @@ export const post = (url, data, method) => {
         })
     })
 };
+
+
+export const loginPost = (url, data, other, method) => {
+    return new Promise((resolve, reject) => {
+        instance.post(url + "?user="+other, data).then(resp => {
+            method.call();
+            Message.success(resp.data.message);
+            resolve(resp);
+        }).catch(error => {
+            return reject(error);
+        })
+    })
+};

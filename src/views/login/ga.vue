@@ -63,7 +63,7 @@ export default {
             this.logintext = "确定..."
 
             this.submitLoad = true;
-            const resp = await gaLogin({code: this.gacode, user: this.user}, this.callMethod).catch(err => {this.submitLoad = false;});
+            const resp = await gaLogin({code: this.gacode, user: this.user}, this.user, this.callMethod).catch(err => {this.submitLoad = false;});
             sessionStorage.setItem("token", resp.data.data.token);
             sessionStorage.setItem("user", resp.data.data.name);
             sessionStorage.setItem("uid", resp.data.data.uid);

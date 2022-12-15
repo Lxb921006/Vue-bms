@@ -58,9 +58,14 @@ export default {
         async Login() {
             this.loginLoad = true;
             this.logintext = "登录..."
-            const resp = await login({user: this.ruleForm.username, password: this.ruleForm.password}, this.callMethod).catch(err => {
+            const resp = await login(
+                {user: this.ruleForm.username, password: this.ruleForm.password}, 
+                this.ruleForm.username, 
+                this.callMethod
+            ).catch(err => {
                 this.loginLoad = false;
             });
+
             if (resp.data.data.isopenga == 1) {
                 this.$router.push(
                     { 
@@ -77,6 +82,7 @@ export default {
                 sessionStorage.setItem("uid", resp.data.data.uid);
                 this.$router.replace('/').catch((err) => err);
             }
+            
             this.logintext = "登录"
             this.loginLoad = false;
         },
