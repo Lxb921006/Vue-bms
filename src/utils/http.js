@@ -81,6 +81,7 @@ export const loginPost = (url, data, other, method) => {
             Message.success(resp.data.message);
             resolve(resp);
         }).catch(error => {
+            Message.error(error+":无法连接服务器");
             return reject(error);
         })
     })
