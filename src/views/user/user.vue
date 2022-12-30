@@ -25,7 +25,7 @@
                             </el-option>
                         </el-select>
                     </el-col>
-                    <el-col :span="1">
+                    <el-col :span="1" class="col-5">
                         <el-tooltip class="item" effect="dark" content="点击搜索" placement="top-start">
                             <el-button size="small" type="primary" icon="el-icon-search" circle @click="ListUser('search')"></el-button>
                         </el-tooltip>
@@ -614,5 +614,10 @@ export default {
 }
 :deep .el-dialog--center .el-dialog__footer {
     background-color: #f9f9f9;
+}
+.col-5 {
+    position: relative;
+    width: 42px;
+    right: 41px;
 }
 </style>
