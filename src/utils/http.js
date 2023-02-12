@@ -19,10 +19,14 @@ instance.interceptors.request.use(config => {
     return Promise.reject(error)
 });
 
+// var p1 = ()=> new Promise((resolve, reject) => setTimeout(()=>resolve(11122), 1000))
+// 定义了一个p1无参函数, 返回值是promise对象
+// 直接new Promise里边的函数会立即执行，所以需要调用时候才执行，只能把new Promise当做函数返回值
+
 instance.interceptors.response.use(resp => {
     // 响应拦截逻辑写在这里
 
-    return Promise.resolve(resp)
+    return Promise.resolve(resp) // 异步调用方式将回调函数作为函数参数返回
 }, err => {
     switch (err.response.status) {
         case 400:
@@ -32,7 +36,7 @@ instance.interceptors.response.use(resp => {
             Message.error(err.response.data.message);
             break
         case 500:
-            Message.error(err.response.Message);
+            Message.error(err.response.data.message);
             break
         case 502:
             Message.error(err.response.data.message+" 3秒后将跳转到登录页!");
@@ -65,10 +69,10 @@ export const post = (url, data, method) => {
     return new Promise((resolve, reject) => {
         instance.post(url, data).then(resp => {
             method.call();
-            Message.success(resp.data.message);
+            // Message.success(resp.data.message);
             resolve(resp);
         }).catch(error => {
-            return reject(error);
+            reject(error);
         })
     })
 };
@@ -78,11 +82,11 @@ export const loginPost = (url, data, other, method) => {
     return new Promise((resolve, reject) => {
         instance.post(url + "?user="+other, data).then(resp => {
             method.call();
-            Message.success(resp.data.message);
+            // Message.success(resp.data.message);
             resolve(resp);
         }).catch(error => {
             Message.error(error+":无法连接服务器");
-            return reject(error);
+            reject(error);
         })
     })
 };

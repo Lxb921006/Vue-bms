@@ -150,6 +150,7 @@
 <script>
 import { getRolesList, removePerms, getPermsTree, allotPerms, getRolePerms, createRole } from '../../api'
 import { mapState } from 'vuex'
+import { Message } from 'element-ui'
 
 export default {
     name: "roles",
@@ -211,6 +212,12 @@ export default {
             }).catch(err => {
                 this.tableLoad = false;
             })
+
+            if (resp.data.code !== 10000) {
+                this.tableLoad = false;
+                return Message.error(resp.data.message);
+            }
+
             this.roleList = resp.data.data;
             this.pages.pageSize = resp.data.pageSize;
             this.total = resp.data.total;
@@ -223,8 +230,16 @@ export default {
             await createRole(params, this.RolesList).catch(err => {
                 this.addLoad = false;
             });
+
+            if (resp.data.code !== 10000) {
+                this.addLoad = false;
+                this.centerDialogVisible = false;
+                return Message.error(resp.data.message);
+            }
+
             this.addLoad = false;
             this.centerDialogVisible = false;
+            return Message.success(resp.data.message);
         },
         async removeRolePerms(pid , row, action) {
             var pidlist = [], data = "", rid = "", rolename = "";
@@ -246,9 +261,16 @@ export default {
             }
             data = JSON.stringify({pid: pidlist, rid, rolename});
             const resp = await removePerms(data, this.callMethod)
+
+            if (resp.data.code !== 10000) {
+                return Message.error(resp.data.message);
+            }
+
             if (action == "tag") {
                 row.mm = resp.data.data;
             }
+
+            return Message.success(resp.data.message);
         },
         async allotPermsToRole() {
             // await this.removeRolePerms("", "", "button");
@@ -256,21 +278,39 @@ export default {
             let pidlist = this.$refs.tree.getCheckedKeys();
             let data = "";
             data = JSON.stringify({pid: pidlist, rid: this.arid, rolename: this.arolename});
-            await allotPerms(data, this.callMethod).catch(err => {
+            const resp = await allotPerms(data, this.callMethod).catch(err => {
                 this.allotLoad = false;
             });
+
+            if (resp.data.code !== 10000) {
+                this.allotLoad = false;
+                return Message.error(resp.data.message);
+            }
+
             this.allotLoad = false;
+            return Message.success(resp.data.message);
         },
         async permsTree(rid) {
             const resp = await getPermsTree({all: 11}).catch(err => {
                 this.treeLoading = false;
             });
+
+            if (resp.data.code !== 10000) {
+                this.treeLoading = false;
+                return Message.error(resp.data.message);
+            }
+
             this.permsTreeList = resp.data.data;
             this.RolePerms(rid);
             this.treeLoading = false;
         },
         async RolePerms(rid) {
             const resp = await getRolePerms({ rid });
+
+            if (resp.data.code !== 10000) {
+                return Message.error(resp.data.message);
+            }
+
             this.roleHavePerms = resp.data.pidList;
         },
         showAllotPerms(row) {

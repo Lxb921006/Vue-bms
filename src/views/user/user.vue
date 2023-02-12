@@ -396,6 +396,12 @@ export default {
             ).catch(err =>{
                 this.tableLoad = false;
             })
+
+            if (resp.data.code !== 10000) {
+                this.tableLoad = false;
+                return Message.error(resp.data.message);
+            }
+
             this.userList = resp.data.data; //用户列表
             this.total = resp.data.total; //用户总数
             this.pages.pageSize = resp.data.pageSize; //一页显示的数据
@@ -405,6 +411,11 @@ export default {
             const resp = await getRolesName({
                 role:11,
             })
+
+            if (resp.data.code !== 10000) {
+                return Message.error(resp.data.message);
+            }
+
             this.roles = resp.data.data;       
         },
         async AddUser() {
@@ -420,14 +431,21 @@ export default {
             params.append('isopenqr', isopenqr);
             params.append('isopenga', isopenga);
             params.append('roleId', this.ruleForm.role);
-            await addUsers(params, this.callMethod).then(resp =>{
-                this.pages.curPage = 1; //添加删除更新重新刷新表格数据回到第一页
-                this.ListUser("page");
-                this.addLoad = false;
-                this.centerDialogVisible = false;
-            }).catch(err => {
+            const resp = await addUsers(params, this.callMethod).catch(err => {
                 this.addLoad = false;
             })
+
+            if (resp.data.code !== 10000) {
+                this.addLoad = false;
+                this.centerDialogVisible = false;
+                return Message.error(resp.data.message);
+            }
+
+            this.pages.curPage = 1; //添加删除更新重新刷新表格数据回到第一页
+            this.ListUser("page");
+            this.addLoad = false;
+            this.centerDialogVisible = false;
+            return Message.success(resp.data.message);
         },
         async DelUser(id, action) {
             var data = "";
@@ -449,22 +467,29 @@ export default {
                     data = JSON.stringify({uid: this.delByID});
                     break
             };
-            await delUsers(
+            const resp = await delUsers(
                 //必须是json格式
                 data, this.callMethod
-            ).then(resp =>{
-                this.pages.curPage = 1; //添加删除重新刷新表格数据回到第一页
-                this.ListUser("page");
-            }).catch(err => {
+            ).catch(err => {
                 Message.error(err)
             })
+
+            if (resp.data.code !== 10000) {
+                this.tableLoad = false;
+                return Message.error(resp.data.message);
+            }
+
+            this.pages.curPage = 1; //添加删除重新刷新表格数据回到第一页
+            this.ListUser("page");
+
             this.tableLoad = false;
+            return Message.success(resp.data.message);
         },
         async UpdateUser() {
             this.updateLoad = true;
             var isopenqr = this.ruleForm.isopenqr ? 1 : 2;
             var isopenga = this.ruleForm.isopenga ? 1 : 2;
-            await updateUsers({
+            const resp = await updateUsers({
                 name: this.ruleForm.name,
                 uid: this.ruleForm.uid,
                 rid: this.ruleForm.role,
@@ -472,14 +497,22 @@ export default {
                 isopenga: isopenga,
                 password: this.ruleForm.upass,
                 rePassword: this.ruleForm.urepass,
-            }, this.callMethod).then(resp => {
-                this.pages.curPage = 1; //添加删除更新重新刷新表格数据回到第一页
-                this.ListUser("page");
-                this.updateLoad = false;
-                this.editDialogVisible = false;
-            }).catch(err => {
+            }, this.callMethod).catch(err => {
                 this.updateLoad = false;
             })
+            
+            if (resp.data.code !== 10000) {
+                this.updateLoad = false;
+                this.editDialogVisible = false;
+                return Message.error(resp.data.message);
+            }
+            
+            this.pages.curPage = 1; //添加删除更新重新刷新表格数据回到第一页
+            this.ListUser("page");
+            this.updateLoad = false;
+            this.editDialogVisible = false;
+            return Message.success(resp.data.message);
+
         },
         submitForm(formName, method) {
             this.$refs[formName].validate((valid) => {

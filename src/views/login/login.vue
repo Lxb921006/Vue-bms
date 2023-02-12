@@ -20,6 +20,8 @@
 
 <script>
 import { login } from '../../api'
+import { Message } from 'element-ui'
+
 export default {
     name:"login",
     data() {
@@ -55,16 +57,22 @@ export default {
         }
     },
     methods:{
+        // async和await的组合也可以写成 login().then(res=>{console.log(111)})但不建议这样写，最好就是async和await的组合避免了primiss.then()的回调地狱，如：func().then().then().then().....
         async Login() {
             this.loginLoad = true;
             this.logintext = "登录..."
+            // login() 返回的是一个promise对象, await 会拿到reslove结果，是then函数的语法糖
             const resp = await login(
                 {user: this.ruleForm.username, password: this.ruleForm.password}, 
                 this.ruleForm.username, 
                 this.callMethod
-            ).catch(err => {
+            )
+
+            if (resp.data.code !== 10000) {
                 this.loginLoad = false;
-            });
+                this.logintext = "登录";
+                return Message.error(resp.data.message)
+            }
 
             if (resp.data.data.isopenga == 1) {
                 this.$router.push(
@@ -77,11 +85,13 @@ export default {
                         }, 
                     });
             } else {
+                
                 sessionStorage.setItem("token", resp.data.data.token);
                 sessionStorage.setItem("user", resp.data.data.name);
                 sessionStorage.setItem("uid", resp.data.data.uid);
                 this.$router.replace('/').catch((err) => err);
             }
+            
             
             this.logintext = "登录"
             this.loginLoad = false;

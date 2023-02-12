@@ -60,16 +60,23 @@ export default {
             if (!this.gacode) {
                 return Message.error("请输入谷歌验证码");
             }
-            this.logintext = "确定..."
+            this.logintext = "确定...";
 
             this.submitLoad = true;
-            const resp = await gaLogin({code: this.gacode, user: this.user}, this.user, this.callMethod).catch(err => {this.submitLoad = false;});
+            const resp = await gaLogin({code: this.gacode, user: this.user}, this.user, this.callMethod).catch(err => {this.submitLoad = false;})
+
+            if (resp.data.code !== 10000) {
+                this.submitLoad = false;
+                this.logintext = "确定";
+                return Message.error(resp.data.message)
+            }
+
             sessionStorage.setItem("token", resp.data.data.token);
             sessionStorage.setItem("user", resp.data.data.name);
             sessionStorage.setItem("uid", resp.data.data.uid);
             this.$router.replace('/').catch((err) => err);
             this.submitLoad = false;
-            this.logintext = "确定"
+            this.logintext = "确定";
         },
         callMethod() {},
 

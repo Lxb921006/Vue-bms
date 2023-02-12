@@ -65,6 +65,7 @@
 
 <script>
 import { getOperateLogList } from '../../api'
+import { Message } from 'element-ui'
 
 export default {
     name:"operate",
@@ -93,10 +94,17 @@ export default {
                 starttime: this.datetime ? this.datetime[0] : "",
                 endtime: this.datetime ? this.datetime[1] : "",
             }).catch(err => this.tableLoad = false); 
-                this.operateList = resp.data.data;
-                this.total = resp.data.total;
-                this.pages.pageSize = resp.data.pageSize;
+
+            
+            if (resp.data.code !== 10000) {
                 this.tableLoad = false;
+                return Message.error(resp.data.message)
+            }
+
+            this.operateList = resp.data.data;
+            this.total = resp.data.total;
+            this.pages.pageSize = resp.data.pageSize;
+            this.tableLoad = false;
         },
         handleCurrentChange(val) {
             this.pages.curPage = val;

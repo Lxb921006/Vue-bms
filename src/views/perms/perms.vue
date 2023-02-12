@@ -88,6 +88,7 @@
 import { Message } from 'element-ui'
 import { getPermsList, createPerms, delPerms } from '../../api'
 import { mapState } from 'vuex'
+
 export default {
     name:"permsList",
     data() {
@@ -152,7 +153,13 @@ export default {
         async PermsList() {
             const resp = await getPermsList({
                 page:this.pages.curPage,
-            })
+            });
+
+            if (resp.data.code !== 10000) {
+                this.tableLoad = false;
+                return Message.error(resp.data.message)
+            }
+
             this.permsList = resp.data.data; //用户列表
             this.total = resp.data.total; //用户总数
             this.pages.pageSize = resp.data.pageSize; //一页显示的数据
@@ -167,9 +174,17 @@ export default {
             params.append('level', this.ruleForm.level);
             //添加删除更新重新刷新表格数据回到第一页
             this.pages.curPage = 1;
-            await createPerms(params, this.PermsList);
+            const resp = await createPerms(params, this.PermsList);
+
+            if (resp.data.code !== 10000) {
+                this.addLoad = false;
+                this.centerDialogVisible =  false;
+                return Message.error(resp.data.message)
+            }
+
             this.addLoad = false;
             this.centerDialogVisible =  false;
+            return Message.success(resp.data.message);
         },
         async DelPerms() {
             this.delLoad = true;
@@ -180,8 +195,15 @@ export default {
             }
             data = JSON.stringify({pid: this.multipleSelection.map(item => item.ID),});
             this.pages.curPage = 1; //添加删除重新刷新表格数据回到第一页
-            await delPerms(data, this.PermsList)
+            const resp = await delPerms(data, this.PermsList)
+
+            if (resp.data.code !== 10000) {
+                this.delLoad = false;
+                return Message.error(resp.data.message)
+            }
+
             this.delLoad = false;
+            return Message.success(resp.data.message);
         },
         submitForm(formName, method) {
             this.$refs[formName].validate((valid) => {
