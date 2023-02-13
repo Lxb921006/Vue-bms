@@ -375,7 +375,6 @@ export default {
         })
     },
     methods:{
-        // 虽然这里使用了语法糖，async/await获取得值就是后端返回得数据，但这里需要用到链式then, 原因是比较特殊0.0
         async ListUser(model) {
             var pageNum = 0;
             switch (model) {

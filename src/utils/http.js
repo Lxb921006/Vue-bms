@@ -49,17 +49,16 @@ instance.interceptors.response.use(resp => {
     return Promise.reject(err)
 });
 
-
+// promise是一个对象, 代表了一个异步操作的最终结果（完成或者失败）
+// 本质上promise是一个函数返回的对象, 可以把回调函数绑定到它上面
+// 这样就不需要一开始就把回调函数作为参数传入函数
 export const get = (url, params) => {
     return new Promise((resolve, reject) => {
-
         instance.get(url, {
             params
         }).then(resp => {
-            
             resolve(resp);
         }).catch(error => {
-
             reject(error);
         })
     })
@@ -68,8 +67,7 @@ export const get = (url, params) => {
 export const post = (url, data, method) => {
     return new Promise((resolve, reject) => {
         instance.post(url, data).then(resp => {
-            method.call();
-            // Message.success(resp.data.message);
+            method.call(); // 不知道当初为啥要传入一个method
             resolve(resp);
         }).catch(error => {
             reject(error);
@@ -82,7 +80,6 @@ export const loginPost = (url, data, other, method) => {
     return new Promise((resolve, reject) => {
         instance.post(url + "?user="+other, data).then(resp => {
             method.call();
-            // Message.success(resp.data.message);
             resolve(resp);
         }).catch(error => {
             Message.error(error+":无法连接服务器");

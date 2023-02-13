@@ -95,6 +95,7 @@ export default {
                 endtime: this.datetime ? this.datetime[1] : "",
             }).catch(err => this.tableLoad = false); 
 
+            console.log("operate.vue resp = ", resp)
             
             if (resp.data.code !== 10000) {
                 this.tableLoad = false;
