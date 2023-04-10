@@ -94,8 +94,8 @@ export default {
 <style lang="scss" scoped>
 .box {
     padding-top: 150px;
-    height: 100%;
-    background-color: #e9e9e9;
+    // height: 100%;
+    // background-color: #e9e9e9;
 }
 .title {
     position: relative;
