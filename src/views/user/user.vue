@@ -647,9 +647,9 @@ export default {
 :deep .el-dialog--center .el-dialog__footer {
     background-color: #f9f9f9;
 }
-.col-5 {
-    position: relative;
-    width: 42px;
-    right: 41px;
-}
+// .col-5 {
+//     position: relative;
+//     width: 42px;
+//     right: 41px;
+// }
 </style>
