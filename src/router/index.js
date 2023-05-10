@@ -17,6 +17,12 @@ const routes = [
     meta: { name: '谷歌认证登录' },
     component: () => import('../views/login/ga')
   },
+  {
+    path: '/assets',
+    name: 'assets',
+    meta: { name: '资产管理' },
+    component: () => import('../views/assets/assets')
+  },
 ]
 
 export const showDynamicRoutes = [

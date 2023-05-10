@@ -5,10 +5,10 @@
                     <el-input type="text" v-model="userdetail.name" autocomplete="off" disabled></el-input>
                 </el-form-item>
                 <el-form-item label="密码" prop="pass">
-                    <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+                    <el-input type="password" v-model="ruleForm.pass" autocomplete="off" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="确认密码" prop="repass">
-                    <el-input type="password" v-model="ruleForm.repass" autocomplete="off"></el-input>
+                    <el-input type="password" v-model="ruleForm.repass" autocomplete="off" clearable></el-input>
                 </el-form-item>
                 <el-form-item class="submit">
                     <el-button @click="resetForm('ruleForm')">重置</el-button>

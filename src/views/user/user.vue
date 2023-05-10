@@ -64,8 +64,8 @@
                     </el-table-column>
                     <el-table-column prop="isopenqr" label="isopenqr" >
                         <template slot-scope="scope">
-                            <el-tag size="small" v-if="scope.row.isopenqr == 1">ga-qr开启</el-tag>
-                            <el-tag size="small" type="danger" v-else-if="scope.row.isopenqr == 2">ga-qr关闭</el-tag>
+                            <el-tag size="small" v-if="scope.row.isopenqr == 1">ga二维码开启</el-tag>
+                            <el-tag size="small" type="danger" v-else-if="scope.row.isopenqr == 2">ga二维码关闭</el-tag>
                         </template>
                     </el-table-column>
                     <el-table-column prop="role" label="role">
