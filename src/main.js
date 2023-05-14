@@ -48,6 +48,7 @@ import { Link } from 'element-ui'
 import { DatePicker } from 'element-ui'
 import { Switch } from 'element-ui'
 import { Statistic } from 'element-ui'
+import { ButtonGroup } from 'element-ui'
 import VueBus from 'vue-bus';
 import VuePageTransition from 'vue-page-transition'
 
@@ -91,6 +92,7 @@ Vue.use(Link);
 Vue.use(DatePicker);
 Vue.use(Switch);
 Vue.use(Statistic);
+Vue.use(ButtonGroup);
 Vue.use(VueBus);
 
 
