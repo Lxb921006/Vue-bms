@@ -40,12 +40,13 @@
             <el-card>
                 <div class="operate">
                     <el-row :gutter="10">
-                        <el-col :span="1.9">
-                            <el-button type="primary" size="mini" icon="el-icon-odometer">重启docker</el-button>
-                        </el-col>
-                        <el-col :span="1.9">
-                            <el-button type="primary" size="mini" icon="el-icon-wallet">重启store</el-button>
-                        </el-col>
+                        <template v-for="data in processList">
+                            <template>
+                                <el-col :span="1.9" :key="data.pid">
+                                    <el-button v-if="data.action==2" type="warning" size="mini" icon="el-icon-basketball">{{ data.name }}</el-button>
+                                </el-col>
+                            </template>
+                        </template>
                     </el-row>
                 </div>
             </el-card>
@@ -54,15 +55,13 @@
             <el-card>
                 <div class="operate">
                     <el-row :gutter="10">
-                        <el-col :span="1.9">
-                            <el-button type="primary" size="mini" icon="el-icon-basketball">停机维护</el-button>
-                        </el-col>
-                        <el-col :span="1.9">
-                            <el-button type="primary" size="mini" icon="el-icon-odometer">docker更新</el-button>
-                        </el-col>
-                        <el-col :span="1.9">
-                            <el-button type="primary" size="mini" icon="el-icon-wallet">store更新</el-button>
-                        </el-col>
+                        <template v-for="data in processList">
+                            <template>
+                                <el-col :span="1.9" :key="data.pid">
+                                    <el-button v-if="data.action==1" type="primary" size="mini" icon="el-icon-basketball">{{ data.name }}</el-button>
+                                </el-col>
+                            </template>
+                        </template>
                     </el-row>
                 </div>
             </el-card>
@@ -85,7 +84,12 @@
                             </el-input>
                         </el-col>
                         <el-col :span="3.9">
-                            <el-select v-model="selectVal" placeholder="批量操作" size="mini" clearable>
+                            <el-select v-model="selectVal" placeholder="批量操作" size="mini" clearable
+                                multiple
+                                filterable
+                                allow-create
+                                default-first-option
+                            >
                                 <el-option
                                     v-for="item in bulkOperation"
                                     :key="item.value"
@@ -106,15 +110,52 @@
                     <el-table-column prop="ouser" label="最近一次操作人" width="160"></el-table-column>
                     <el-table-column prop="status" label="更新状态" >
                         <template slot-scope="scope">
-                            <el-tag effect="plain" size="small" type="warning" v-if="scope.row.status == 100">进行中...</el-tag>
-                            <el-tag effect="plain" size="small" type="success" v-else-if="scope.row.status == 200">成功</el-tag>
-                            <el-tag effect="plain" size="small" type="danger" v-else-if="scope.row.status == 300">失败</el-tag>
-                            <el-tag effect="plain" size="small" v-else-if="scope.row.status == 400">全部</el-tag>
+                            <el-popover
+                                v-if="scope.row.status == 100"
+                                placement="right"
+                                title="正在更新的进程"
+                                width="200"
+                                trigger="click"
+                                >
+                                <el-divider></el-divider>
+                                <el-row :gutter="20" class="process-running-list">
+                                    <template v-for="data in running">
+                                        <template >
+                                            <el-col :span="9" :key="data.id">
+                                                <el-tag effect="plain" size="mini" type="success" >{{ data.process }}</el-tag>
+                                            </el-col>
+                                        </template>
+                                    </template>
+                                </el-row>
+                                <el-button slot="reference" type="warning"  size="mini" plain>进行中...</el-button>
+                            </el-popover>
+                            <el-tag effect="plain"  type="success" v-else-if="scope.row.status == 200">成功</el-tag>
+                            <el-tag effect="plain"  type="danger" v-else-if="scope.row.status == 300">失败</el-tag>
+                            <el-tag effect="plain"  v-else-if="scope.row.status == 400">全部</el-tag>
+                            <el-tag effect="plain"  v-else>空闲</el-tag>
                         </template>
                     </el-table-column>
                     <el-table-column prop="process" label="过程" width="250">
                         <template slot-scope="scope">
-                            <el-link type="success" @click="viewContent(scope.row)">查看更新过程</el-link>
+                            <!-- <el-link type="success" @click="viewContent(scope.row)">查看更新结果</el-link> -->
+                            <el-popover                
+                                placement="right"
+                                title="查看更新结果"
+                                width="200"
+                                trigger="click"
+                                >
+                                <el-divider></el-divider>
+                                <el-row :gutter="20" class="process-running-list">
+                                    <template v-for="data in running">
+                                        <template >
+                                            <el-col :span="9" :key="data.id">
+                                                <el-button type="warning"  size="mini" plain @click="viewContent(scope.row)">{{ data.process }}</el-button>
+                                            </el-col>
+                                        </template>
+                                    </template>
+                                </el-row>
+                                <el-link slot="reference" type="success">查看更新结果</el-link>
+                            </el-popover>
                         </template>
                     </el-table-column>
                     <el-table-column prop="start" label="开始时间" width="190">
@@ -167,23 +208,46 @@
         data () {
             return {
                 searchData: "",
-                selectVal: "",
+                selectVal: [],
                 tableLoad: "",
-                total:0,
+                total:5,
+                processList: [
+                    {pid:1, name: "停机维护", action: 1},
+                    {pid:2, name: "docker更新", action: 1},
+                    {pid:3, name: "store更新", action: 1},
+                    {pid:4, name: "java更新", action: 1},
+                    {pid:5, name: "重启docker", action: 2},
+                    {pid:6, name: "重启store", action: 2},
+                ],
                 bulkOperation: [
                     {
                         value: "批量删除"
+                    },
+                    {
+                        value: "停止docker"
+                    },
+                    {
+                        value: "停止store"
                     },
                 ],
                 pages: {
                     curPage:1,
                     pageSize:5,
                 },
+                running: [
+                    {id: 1, process: "停机维护"},
+                    {id: 2, process: "docker更新"},
+                    {id: 3, process: "store更新"},
+                    {id: 4, process: "停机维护"},
+                    {id: 5, process: "重启docker"},
+                    {id: 6, process: "重启store"},
+                ],
+                finished: [],
                 multipleSelection: [],
                 dataList: [
                     {
                         ID: 1,
-                        ouser: "lxb",
+                        ouser: "test",
                         ip: "1.1.1.1",
                         status: 100,
                         start: "2023-05-14 15:02:36",
@@ -191,7 +255,7 @@
                     },
                     {
                         ID: 2,
-                        ouser: "lxb",
+                        ouser: "test",
                         ip: "1.1.1.1",
                         status: 200,
                         start: "2023-05-14 15:02:36",
@@ -199,7 +263,7 @@
                     },
                     {
                         ID: 3,
-                        ouser: "lxb",
+                        ouser: "test",
                         ip: "1.1.1.1",
                         status: 300,
                         start: "2023-05-14 15:02:36",
@@ -207,9 +271,17 @@
                     },
                     {
                         ID: 4,
-                        ouser: "lxb",
+                        ouser: "test",
                         ip: "1.1.1.1",
                         status: 300,
+                        start: "2023-05-14 15:02:36",
+                        end: "2023-05-14 15:02:36",
+                    },
+                    {
+                        ID: 4,
+                        ouser: "test",
+                        ip: "1.1.1.1",
+                        status: 500,
                         start: "2023-05-14 15:02:36",
                         end: "2023-05-14 15:02:36",
                     },
@@ -243,5 +315,17 @@
 }
 .cell button {
     margin-right: 7px;
+}
+
+// 修改elementui css
+
+.el-popover__title {
+    font-weight: 600;
+}
+.el-divider--horizontal {
+    margin: 7px 0;
+}
+.process-running-list > div{
+    padding: 4px 1px;
 }
 </style>
