@@ -122,7 +122,7 @@
                                     <template v-for="data in running">
                                         <template >
                                             <el-col :span="9" :key="data.id">
-                                                <el-tag effect="plain" size="mini" type="success" >{{ data.process }}</el-tag>
+                                                <el-tag effect="plain" size="mini" type="success" >{{ data.name }}</el-tag>
                                             </el-col>
                                         </template>
                                     </template>
@@ -137,19 +137,18 @@
                     </el-table-column>
                     <el-table-column prop="process" label="过程" width="250">
                         <template slot-scope="scope">
-                            <!-- <el-link type="success" @click="viewContent(scope.row)">查看更新结果</el-link> -->
                             <el-popover                
                                 placement="right"
                                 title="查看更新结果"
-                                width="200"
+                                width="230"
                                 trigger="click"
                                 >
                                 <el-divider></el-divider>
                                 <el-row :gutter="20" class="process-running-list">
                                     <template v-for="data in running">
                                         <template >
-                                            <el-col :span="9" :key="data.id">
-                                                <el-button type="warning"  size="mini" plain @click="viewContent(scope.row)">{{ data.process }}</el-button>
+                                            <el-col :span="12" :key="data.id">
+                                                <el-button type="warning"  size="mini" plain @click="viewContent(scope.row, data.name)">{{ data.name }}</el-button>
                                             </el-col>
                                         </template>
                                     </template>
@@ -235,12 +234,12 @@
                     pageSize:5,
                 },
                 running: [
-                    {id: 1, process: "停机维护"},
-                    {id: 2, process: "docker更新"},
-                    {id: 3, process: "store更新"},
-                    {id: 4, process: "停机维护"},
-                    {id: 5, process: "重启docker"},
-                    {id: 6, process: "重启store"},
+                    {id: 1, name: "停机维护"},
+                    {id: 2, name: "docker更新"},
+                    {id: 3, name: "store更新"},
+                    {id: 4, name: "停机维护"},
+                    {id: 5, name: "重启docker"},
+                    {id: 6, name: "重启store"},
                 ],
                 finished: [],
                 multipleSelection: [],
@@ -289,7 +288,7 @@
             }
         },
         methods: {
-            viewContent(data) {
+            viewContent(row, data) {
 
             },
             handleDelete (data) {
@@ -319,7 +318,7 @@
 
 // 修改elementui css
 
-.el-popover__title {
+:deep .el-popover__title {
     font-weight: 600;
 }
 .el-divider--horizontal {
