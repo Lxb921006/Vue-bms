@@ -23,6 +23,13 @@ const routes = [
     meta: { name: '资产管理' },
     component: () => import('../views/assets/assets')
   },
+  {
+    path: '/assets/update/:ip/:name',
+    // path: '/ga',
+    name: 'assets-update',
+    meta: { name: '查看更新' },
+    component: () => import('../views/assets/assetsUpdate')
+  },
 ]
 
 export const showDynamicRoutes = [

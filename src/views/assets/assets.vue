@@ -43,7 +43,7 @@
                         <template v-for="data in processList">
                             <template>
                                 <el-col :span="1.9" :key="data.pid">
-                                    <el-button v-if="data.action==2" type="warning" size="mini" icon="el-icon-basketball">{{ data.name }}</el-button>
+                                    <el-button v-if="data.action==2" type="warning" size="mini" icon="el-icon-basketball" @click="runProcess('sin', data.name)">{{ data.name }}</el-button>
                                 </el-col>
                             </template>
                         </template>
@@ -58,7 +58,7 @@
                         <template v-for="data in processList">
                             <template>
                                 <el-col :span="1.9" :key="data.pid">
-                                    <el-button v-if="data.action==1" type="primary" size="mini" icon="el-icon-basketball">{{ data.name }}</el-button>
+                                    <el-button v-if="data.action==1" type="primary" size="mini" icon="el-icon-basketball" @click="runProcess('sin', data.name)">{{ data.name }}</el-button>
                                 </el-col>
                             </template>
                         </template>
@@ -83,6 +83,7 @@
                                 <el-button slot="append" icon="el-icon-search" size="mini"></el-button>
                             </el-input>
                         </el-col>
+                        <div class="mul-op">
                         <el-col :span="3.9">
                             <el-select v-model="selectVal" placeholder="批量操作" size="mini" clearable
                                 multiple
@@ -91,16 +92,36 @@
                                 default-first-option
                             >
                                 <el-option
-                                    v-for="item in bulkOperation"
-                                    :key="item.value"
-                                    :label="item.value"
-                                    :value="item.value">
+                                    v-for="item in processList"
+                                    :key="item.name"
+                                    :label="item.name"
+                                    :value="item.name">
                                 </el-option>
                             </el-select>
                         </el-col>
+                        <el-col :span="3.9">
+                            <el-button type="primary"  size="mini" @click="runProcess('mul', '')">提交</el-button>
+                        </el-col>
+                        <el-col :span="2" class="c1">
+                            <el-link type="primary" @click="oc">{{ detailContent }}<i :class="detailICon"></i> </el-link>
+                        </el-col>
+                    </div>
                     </el-row>
                 </div>
                 <div class="table">
+                    <transition name="el-zoom-in-center">
+                        <div class="detail" v-show="detailView">
+                            <el-row :gutter="10">
+                                <h3 class="title-2">更新设置</h3>
+                            </el-row>
+                            <el-row :gutter="10" class="detail-content">
+                                <el-col :span="1.9">
+                                   <label>更新程序是否直接在页面上打开:</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </transition>
+                    
                     <el-table v-loading="tableLoad" stripe  :data="dataList" @selection-change="handleSelectionChange"
                     element-loading-text="拼命加载中"
                 >
@@ -120,9 +141,9 @@
                                 <el-divider></el-divider>
                                 <el-row :gutter="20" class="process-running-list">
                                     <template v-for="data in running">
-                                        <template >
-                                            <el-col :span="9" :key="data.id">
-                                                <el-tag effect="plain" size="mini" type="success" >{{ data.name }}</el-tag>
+                                        <template>
+                                            <el-col :span="9" :key="data.id" v-if="scope.row.ip == data.ip">
+                                                <el-tag effect="plain" size="mini" type="success">{{ data.name }}</el-tag>
                                             </el-col>
                                         </template>
                                     </template>
@@ -132,7 +153,7 @@
                             <el-tag effect="plain"  type="success" v-else-if="scope.row.status == 200">成功</el-tag>
                             <el-tag effect="plain"  type="danger" v-else-if="scope.row.status == 300">失败</el-tag>
                             <el-tag effect="plain"  v-else-if="scope.row.status == 400">全部</el-tag>
-                            <el-tag effect="plain"  v-else>空闲</el-tag>
+                            <el-tag effect="plain"  v-else>无操作</el-tag>
                         </template>
                     </el-table-column>
                     <el-table-column prop="process" label="过程" width="250">
@@ -145,7 +166,7 @@
                                 >
                                 <el-divider></el-divider>
                                 <el-row :gutter="20" class="process-running-list">
-                                    <template v-for="data in running">
+                                    <template v-for="data in processList">
                                         <template >
                                             <el-col :span="12" :key="data.id">
                                                 <el-button type="warning"  size="mini" plain @click="viewContent(scope.row, data.name)">{{ data.name }}</el-button>
@@ -198,18 +219,58 @@
                 </div>
             </el-card>
         </div>
+        <div class="result">
+            <el-dialog
+                title="查看"
+                :visible.sync="resultVisible"
+                width="50%"
+                center
+                >
+                <div class="result-title">
+                    <el-card>
+                        <el-divider><strong><i class="el-icon-platform-eleme"></i>操作</strong></el-divider>
+                        <p class="op-name">
+                            <el-row :gutter="10">
+                                <el-col :span="1.9" >
+                                    <el-tag effect="plain" size="mini" type="success">{{ curName }}</el-tag>
+                                </el-col>
+                            </el-row>
+                        </p>
+                    </el-card>
+                </div>
+                <div class="result-data">
+                    <el-card>
+                        <el-divider><strong><i class="el-icon-platform-eleme"></i>内容</strong></el-divider>
+                        <div class="format-code">
+                            <pre><code>{{ content }}}</code></pre>
+                        </div>
+                    </el-card>
+                </div>
+                </el-dialog>
+        </div>
     </div>
 </template>
 
 <script>
+    import { Message, MessageBox } from 'element-ui'
+
+
     export default {
         name: "assets",
         data () {
             return {
                 searchData: "",
                 selectVal: [],
+                isJump: false,
+                detailView: false,
+                detailContent: "展开",
+                detailICon: "el-icon-arrow-down",
                 tableLoad: "",
                 total:5,
+                content: "",
+                curIp: "",
+                curName: "",
+                resultVisible: false,
                 processList: [
                     {pid:1, name: "停机维护", action: 1},
                     {pid:2, name: "docker更新", action: 1},
@@ -233,14 +294,7 @@
                     curPage:1,
                     pageSize:5,
                 },
-                running: [
-                    {id: 1, name: "停机维护"},
-                    {id: 2, name: "docker更新"},
-                    {id: 3, name: "store更新"},
-                    {id: 4, name: "停机维护"},
-                    {id: 5, name: "重启docker"},
-                    {id: 6, name: "重启store"},
-                ],
+                running: [],
                 finished: [],
                 multipleSelection: [],
                 dataList: [
@@ -255,7 +309,7 @@
                     {
                         ID: 2,
                         ouser: "test",
-                        ip: "1.1.1.1",
+                        ip: "1.1.1.2",
                         status: 200,
                         start: "2023-05-14 15:02:36",
                         end: "2023-05-14 15:02:36",
@@ -263,7 +317,7 @@
                     {
                         ID: 3,
                         ouser: "test",
-                        ip: "1.1.1.1",
+                        ip: "1.1.1.3",
                         status: 300,
                         start: "2023-05-14 15:02:36",
                         end: "2023-05-14 15:02:36",
@@ -271,15 +325,15 @@
                     {
                         ID: 4,
                         ouser: "test",
-                        ip: "1.1.1.1",
-                        status: 300,
+                        ip: "1.1.1.4",
+                        status: 100,
                         start: "2023-05-14 15:02:36",
                         end: "2023-05-14 15:02:36",
                     },
                     {
-                        ID: 4,
+                        ID: 5,
                         ouser: "test",
-                        ip: "1.1.1.1",
+                        ip: "1.1.1.5",
                         status: 500,
                         start: "2023-05-14 15:02:36",
                         end: "2023-05-14 15:02:36",
@@ -288,8 +342,92 @@
             }
         },
         methods: {
-            viewContent(row, data) {
+            oc () {
+                this.detailContent = this.detailContent === "展开" ? "收起" : "展开";
+                this.detailICon = this.detailICon === "el-icon-arrow-down" ? "el-icon-arrow-up" : "el-icon-arrow-down";
+                this.detailView = this.detailView === false ? true : false;
+            },
+            open(action, title, process) {
+                MessageBox.confirm(title, '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    let data = {};
+                    let id = "";
+                    let ip = "";
+                    switch (action) {
+                        case 'sin':
+                            for (let i = 0; i < this.multipleSelection.length; i++) {
+                                ip = this.multipleSelection[i].ip;
+                                id = (100000000 - 1) * Math.random() + 1;
+                                data["id"] = id;
+                                data["ip"] = ip;
+                                data["name"] = process;
+                                this.running.push(data);
+                            }
+                            break
+                        case 'mul':
+                            for (let i = 0; i < this.multipleSelection.length; i++) {
+                                for (let t = 0; t < this.selectVal.length; t++) {
+                                    ip = this.multipleSelection[i].ip;
+                                    id = (100000000 - 1) * Math.random() + 1;
+                                    data["id"] = id;
+                                    data["ip"] = ip;
+                                    data["name"] = this.selectVal[t];
+                                    this.running.push(data);
+                                    data = {};
+                                }
+                            }
+                            break
+                    }
 
+                    Message.success(`${process}操作已提交`);
+                }).catch((err) => {
+                    console.log(err);
+                    Message.info(`${process}操作已取消`);       
+                });
+            },
+            runProcess(action, name) {
+                if (this.multipleSelection.length === 0) {
+                    return Message.error("请先勾选需要更新的服务器");
+                }
+
+                let title = "";
+                let ip = this.multipleSelection.map(item => item.ip);
+
+                switch (action) {
+                    case "sin":
+                        title = "服务器: " + ip.join("&") + "确定操作" + name + "吗？";
+                        this.open('sin', title, name);
+                        break
+                    case "mul":
+                        console.log(this.selectVal);
+                        title = "服务器: " + ip.join("&") + "确定操作" + this.selectVal.join("&") + "吗？";
+                        this.open('mul', title, this.selectVal.join("&"));
+                        break
+                }
+                
+                
+            },
+            viewContent(row, name) {
+                // this.resultVisible = true;
+                this.curIp = row.ip;
+                this.curName = name;
+
+                let routeData = this.$router.resolve(
+                    { path: `/assets/update/${row.ip}/${this.curName}` }
+                );
+                window.open(routeData.href, '_blank');
+                // this.$router.push(
+                //     { 
+                //         name: 'assets-update', 
+                //         params: { 
+                //                 ip: row.ip, 
+                //                 curName: name,
+                //         }, 
+                //     });
+                
             },
             handleDelete (data) {
 
@@ -301,7 +439,10 @@
                 this.pages.curPage = val;
                 // this.ListUser("page");
             },
-        }
+        },
+        mounted () {
+            
+        },
     }
 </script>
 
@@ -309,15 +450,51 @@
 .box {
     padding: 15px;
 }
-.sestion-2, .sestion-1-2, .sestion-3, .table, .page {
+.sestion-2, .sestion-1-2, .sestion-3, .table, .page, .result-data {
     margin-top: 16px;
 }
 .cell button {
     margin-right: 7px;
 }
-
+// .mul-op {
+//     float: right;
+// }
 // 修改elementui css
-
+.op-name {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 16px;
+}
+.format-code {
+    height: 533px;
+    text-align: justify;
+    font-size: 17px;
+    overflow: auto;
+    color: #c3c3c3;
+    background-color: #292828;
+    padding: 6px 12px;
+    box-sizing: border-box;
+    width: auto;
+    margin-top: 10px;
+    white-space: pre-wrap;
+}
+.c1 {
+    padding-top: 5px;
+}
+.detail {
+    text-align: left;
+    margin-bottom: 45px;
+}
+.title-2 {
+    height: 50px;
+    line-height: 50px;
+    border-bottom: 1px solid #f3f3f3;
+    padding-left: 30px;
+}
+.detail-content {
+    margin-top: 10px;
+}
 :deep .el-popover__title {
     font-weight: 600;
 }
