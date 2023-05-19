@@ -4,31 +4,31 @@
             <el-card>
                 <div class="process-info">
                     <el-row :gutter="20">
-                        <el-col :span="6">
+                        <!-- <el-col :span="6">
                             <div>
                                 <el-statistic title="总的的任务">
                                     <template slot="formatter"> 1024 </template>
                                 </el-statistic>
                             </div>
-                        </el-col>
+                        </el-col> -->
                         <el-col :span="6">
                             <div>
                                 <el-statistic title="进行中的任务">
-                                    <template slot="formatter"> 1024 </template>
+                                    <template slot="formatter"> 0 </template>
                                 </el-statistic>
                             </div>
                         </el-col>
                         <el-col :span="6">
                             <div>
                                 <el-statistic title="已完成的任务">
-                                    <template slot="formatter"> 512 </template>
+                                    <template slot="formatter"> 0 </template>
                                 </el-statistic>
                             </div>
                         </el-col>
                         <el-col :span="6">
                             <div>
                                 <el-statistic title="失败的任务">
-                                    <template slot="formatter"> 512 </template>
+                                    <template slot="formatter"> 0 </template>
                                 </el-statistic>
                             </div>
                         </el-col>
@@ -36,7 +36,7 @@
                 </div>
             </el-card>
         </div>
-        <div class="sestion-1-2">
+        <!-- <div class="sestion-1-2">
             <el-card>
                 <div class="operate">
                     <el-row :gutter="10">
@@ -50,6 +50,26 @@
                     </el-row>
                 </div>
             </el-card>
+        </div> -->
+        <div class="sestion-4">
+            <el-card>
+                <div class="upload">
+                    <el-row :gutter="10">
+                        <el-upload
+                            class="upload-demo"
+                            ref="upload"
+                            action="https://jsonplaceholder.typicode.com/posts/"
+                            :on-preview="handlePreview"
+                            :on-remove="handleRemove"
+                            :limit="10"
+                            :auto-upload="false">
+                            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+                            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+                            <div slot="tip" class="el-upload__tip size">这里可以上传文件, 系统会批量的分发到勾选的服务器然后再点击对应按钮更新或重启</div>
+                        </el-upload>
+                    </el-row>
+                </div>
+            </el-card>
         </div>
         <div class="sestion-2">
             <el-card>
@@ -59,6 +79,7 @@
                             <template>
                                 <el-col :span="1.9" :key="data.pid">
                                     <el-button v-if="data.action==1" type="primary" size="mini" icon="el-icon-basketball" @click="runProcess('sin', data.name)">{{ data.name }}</el-button>
+                                    <el-button v-else-if="data.action==2" type="warning" size="mini" icon="el-icon-basketball" @click="runProcess('sin', data.name)">{{ data.name }}</el-button>
                                 </el-col>
                             </template>
                         </template>
@@ -66,13 +87,14 @@
                 </div>
             </el-card>
         </div>
+        
         <div class="sestion-3">
             <el-card>
                 <div class="search">
                     <el-row :gutter=10>
                         <el-col :span=3.9>
                             <el-button-group>
-                                <el-button type="primary"  size="mini">全部</el-button>
+                                <!-- <el-button type="primary"  size="mini">全部</el-button> -->
                                 <el-button type="warning"  size="mini">进行中</el-button>
                                 <el-button type="success" size="mini">成功</el-button>
                                 <el-button type="danger"  size="mini">失败</el-button>
@@ -85,7 +107,7 @@
                         </el-col>
                         <div class="mul-op">
                         <el-col :span="3.9">
-                            <el-select v-model="selectVal" placeholder="批量操作" size="mini" clearable
+                            <el-select v-model="selectVal" placeholder="更多操作" size="mini" clearable
                                 multiple
                                 filterable
                                 allow-create
@@ -116,7 +138,7 @@
                             </el-row>
                             <el-row :gutter="10" class="detail-content">
                                 <el-col :span="1.9">
-                                   <label>更新程序是否直接在页面上打开:</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                                   <label class="detail-2">点击更新程序是否在新的页面上打开:</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
                                 </el-col>
                             </el-row>
                         </div>
@@ -129,7 +151,7 @@
                     <el-table-column prop="ID" label="id"></el-table-column>
                     <el-table-column prop="ip" label="服务器" ></el-table-column>
                     <el-table-column prop="ouser" label="最近一次操作人" width="160"></el-table-column>
-                    <el-table-column prop="status" label="更新状态" >
+                    <el-table-column prop="status" label="更新状态" width="160">
                         <template slot-scope="scope">
                             <el-popover
                                 v-if="scope.row.status == 100"
@@ -142,7 +164,7 @@
                                 <el-row :gutter="20" class="process-running-list">
                                     <template v-for="data in running">
                                         <template>
-                                            <el-col :span="9" :key="data.id" v-if="scope.row.ip == data.ip">
+                                            <el-col :span="9" :key="data.id + uniqueRandom()" v-if="scope.row.ip == data.ip">
                                                 <el-tag effect="plain" size="mini" type="success">{{ data.name }}</el-tag>
                                             </el-col>
                                         </template>
@@ -155,6 +177,15 @@
                             <el-tag effect="plain"  v-else-if="scope.row.status == 400">全部</el-tag>
                             <el-tag effect="plain"  v-else>无操作</el-tag>
                         </template>
+                    </el-table-column>
+                    <el-table-column prop="process2" label="更新进度" width="250">
+                        <template slot-scope="scope">
+                            <el-progress :percentage="100" status="success" v-if="scope.row.status == 200"></el-progress>
+                            <el-progress :percentage="100" status="success" v-else-if="scope.row.status == 300"></el-progress>
+                            <el-progress :percentage="50" v-else-if="scope.row.status == 100"></el-progress>
+                            <el-progress :percentage="0" v-else></el-progress>
+                        </template>
+                        
                     </el-table-column>
                     <el-table-column prop="process" label="过程" width="250">
                         <template slot-scope="scope">
@@ -169,7 +200,7 @@
                                     <template v-for="data in processList">
                                         <template >
                                             <el-col :span="12" :key="data.id">
-                                                <el-button type="warning"  size="mini" plain @click="viewContent(scope.row, data.name)">{{ data.name }}</el-button>
+                                                <el-button type="warning"  size="mini" plain @click="viewContent2(scope.row, data.name)">{{ data.name }}</el-button>
                                             </el-col>
                                         </template>
                                     </template>
@@ -232,7 +263,10 @@
                         <p class="op-name">
                             <el-row :gutter="10">
                                 <el-col :span="1.9" >
-                                    <el-tag effect="plain" size="mini" type="success">{{ curName }}</el-tag>
+                                    <el-tag effect="plain"  type="success">{{ curIp }}</el-tag>
+                                </el-col>
+                                <el-col :span="1.9" >
+                                    <el-tag effect="plain"  type="success">{{ curName }}</el-tag>
                                 </el-col>
                             </el-row>
                         </p>
@@ -242,7 +276,7 @@
                     <el-card>
                         <el-divider><strong><i class="el-icon-platform-eleme"></i>内容</strong></el-divider>
                         <div class="format-code">
-                            <pre><code>{{ content }}}</code></pre>
+                            <pre><code>{{ content.join('') }}</code></pre>
                         </div>
                     </el-card>
                 </div>
@@ -252,205 +286,233 @@
 </template>
 
 <script>
-    import { Message, MessageBox } from 'element-ui'
+import { Message, MessageBox } from 'element-ui'
+import { mapState, mapGetters } from 'vuex'
+import store from '../../store/index'
 
 
-    export default {
-        name: "assets",
-        data () {
-            return {
-                searchData: "",
-                selectVal: [],
-                isJump: false,
-                detailView: false,
-                detailContent: "展开",
-                detailICon: "el-icon-arrow-down",
-                tableLoad: "",
-                total:5,
-                content: "",
-                curIp: "",
-                curName: "",
-                resultVisible: false,
-                processList: [
-                    {pid:1, name: "停机维护", action: 1},
-                    {pid:2, name: "docker更新", action: 1},
-                    {pid:3, name: "store更新", action: 1},
-                    {pid:4, name: "java更新", action: 1},
-                    {pid:5, name: "重启docker", action: 2},
-                    {pid:6, name: "重启store", action: 2},
-                ],
-                bulkOperation: [
-                    {
-                        value: "批量删除"
-                    },
-                    {
-                        value: "停止docker"
-                    },
-                    {
-                        value: "停止store"
-                    },
-                ],
-                pages: {
-                    curPage:1,
-                    pageSize:5,
+
+export default {
+    name: "assets",
+    data () {
+        return {
+            searchData: "",
+            selectVal: [],
+            isJump: true,
+            detailView: false,
+            updateRunning: [],
+            detailContent: "更新设置",
+            detailICon: "el-icon-arrow-down",
+            tableLoad: "",
+            total:5,
+            content: [],
+            curIp: "",
+            curName: "",
+            resultVisible: false,
+            processList: [
+                {pid:2, name: "docker更新", action: 1},
+                {pid:4, name: "java更新", action: 1},
+                {pid:5, name: "重启docker", action: 2},
+                {pid:6, name: "重启java", action: 2},
+            ],
+            pages: {
+                curPage:1,
+                pageSize:5,
+            },
+            finished: [],
+            multipleSelection: [],
+            dataList: [
+                {
+                    ID: 1,
+                    ouser: "test",
+                    ip: "1.1.1.1",
+                    status: 100,
+                    start: "2023-05-14 15:02:36",
+                    end: "2023-05-14 15:02:36",
                 },
-                running: [],
-                finished: [],
-                multipleSelection: [],
-                dataList: [
-                    {
-                        ID: 1,
-                        ouser: "test",
-                        ip: "1.1.1.1",
-                        status: 100,
-                        start: "2023-05-14 15:02:36",
-                        end: "2023-05-14 15:02:36",
-                    },
-                    {
-                        ID: 2,
-                        ouser: "test",
-                        ip: "1.1.1.2",
-                        status: 200,
-                        start: "2023-05-14 15:02:36",
-                        end: "2023-05-14 15:02:36",
-                    },
-                    {
-                        ID: 3,
-                        ouser: "test",
-                        ip: "1.1.1.3",
-                        status: 300,
-                        start: "2023-05-14 15:02:36",
-                        end: "2023-05-14 15:02:36",
-                    },
-                    {
-                        ID: 4,
-                        ouser: "test",
-                        ip: "1.1.1.4",
-                        status: 100,
-                        start: "2023-05-14 15:02:36",
-                        end: "2023-05-14 15:02:36",
-                    },
-                    {
-                        ID: 5,
-                        ouser: "test",
-                        ip: "1.1.1.5",
-                        status: 500,
-                        start: "2023-05-14 15:02:36",
-                        end: "2023-05-14 15:02:36",
-                    },
-                ],
+                {
+                    ID: 2,
+                    ouser: "test",
+                    ip: "1.1.1.2",
+                    status: 200,
+                    start: "2023-05-14 15:02:36",
+                    end: "2023-05-14 15:02:36",
+                },
+                {
+                    ID: 3,
+                    ouser: "test",
+                    ip: "1.1.1.3",
+                    status: 300,
+                    start: "2023-05-14 15:02:36",
+                    end: "2023-05-14 15:02:36",
+                },
+                {
+                    ID: 4,
+                    ouser: "test",
+                    ip: "1.1.1.4",
+                    status: 100,
+                    start: "2023-05-14 15:02:36",
+                    end: "2023-05-14 15:02:36",
+                },
+                {
+                    ID: 5,
+                    ouser: "test",
+                    ip: "1.1.1.5",
+                    status: 500,
+                    start: "2023-05-14 15:02:36",
+                    end: "2023-05-14 15:02:36",
+                },
+            ],
+        }
+    },
+    computed: {
+        ...mapState({
+            'running': state => state.runningProcess.running,
+        }),
+    },
+    watch: {},
+    methods: {
+        submitUpload() {
+            if (this.$refs.upload.uploadFiles.length === 0) {
+                return Message.error('请先选择需要上传的文件')
             }
+
+            this.$refs.upload.submit();
         },
-        methods: {
-            oc () {
-                this.detailContent = this.detailContent === "展开" ? "收起" : "展开";
-                this.detailICon = this.detailICon === "el-icon-arrow-down" ? "el-icon-arrow-up" : "el-icon-arrow-down";
-                this.detailView = this.detailView === false ? true : false;
-            },
-            open(action, title, process) {
-                MessageBox.confirm(title, '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    let data = {};
-                    let id = "";
-                    let ip = "";
-                    switch (action) {
-                        case 'sin':
-                            for (let i = 0; i < this.multipleSelection.length; i++) {
-                                ip = this.multipleSelection[i].ip;
-                                id = (100000000 - 1) * Math.random() + 1;
-                                data["id"] = id;
-                                data["ip"] = ip;
-                                data["name"] = process;
-                                this.running.push(data);
-                            }
-                            break
-                        case 'mul':
-                            for (let i = 0; i < this.multipleSelection.length; i++) {
-                                for (let t = 0; t < this.selectVal.length; t++) {
-                                    ip = this.multipleSelection[i].ip;
-                                    id = (100000000 - 1) * Math.random() + 1;
-                                    data["id"] = id;
-                                    data["ip"] = ip;
-                                    data["name"] = this.selectVal[t];
-                                    this.running.push(data);
-                                    data = {};
-                                }
-                            }
-                            break
-                    }
-
-                    Message.success(`${process}操作已提交`);
-                }).catch((err) => {
-                    console.log(err);
-                    Message.info(`${process}操作已取消`);       
-                });
-            },
-            runProcess(action, name) {
-                if (this.multipleSelection.length === 0) {
-                    return Message.error("请先勾选需要更新的服务器");
-                }
-
-                let title = "";
-                let ip = this.multipleSelection.map(item => item.ip);
-
+        handleRemove(file, fileList) {
+            console.log(file, fileList);
+        },
+        handlePreview(file) {
+            console.log(file);
+        },
+        uniqueRandom () {
+            const now = Date.now();
+            const randomSuffix = Math.floor(Math.random() * 1000000);
+            return `${now}-${randomSuffix}`;
+        },
+        oc () {
+            // this.detailContent = this.detailContent === "展开" ? "收起" : "展开";
+            this.detailICon = this.detailICon === "el-icon-arrow-down" ? "el-icon-arrow-up" : "el-icon-arrow-down";
+            this.detailView = this.detailView === false ? true : false;
+        },
+        open(action, title, process) {
+            MessageBox.confirm(title, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                let data = {};
+                let id = "";
+                let ip = "";
+                let params = "";
                 switch (action) {
-                    case "sin":
-                        title = "服务器: " + ip.join("&") + "确定操作" + name + "吗？";
-                        this.open('sin', title, name);
+                    case 'sin':
+                        for (let i = 0; i < this.multipleSelection.length; i++) {
+                            ip = this.multipleSelection[i].ip;
+                            data["id"] = this.uniqueRandom();
+                            data["ip"] = ip;
+                            data["name"] = process;
+                            store.commit("ADD_PROCESS", data);
+                            data = {};
+                            if (this.isJump) {
+                                params = {ip};
+                                this.viewContent(params, process);
+                            };
+                        }
                         break
-                    case "mul":
-                        console.log(this.selectVal);
-                        title = "服务器: " + ip.join("&") + "确定操作" + this.selectVal.join("&") + "吗？";
-                        this.open('mul', title, this.selectVal.join("&"));
+                    case 'mul':
+                        for (let i = 0; i < this.multipleSelection.length; i++) {
+                            for (let t = 0; t < this.selectVal.length; t++) {
+                                ip = this.multipleSelection[i].ip;
+                                data["id"] = this.uniqueRandom();
+                                data["ip"] = ip;
+                                data["name"] = this.selectVal[t];
+                                store.commit("ADD_PROCESS", data);
+                                data = {};
+                                if (this.isJump) {
+                                    params = {ip};
+                                    this.viewContent(params, this.selectVal[t]);
+                                };
+                            }
+                        }
                         break
                 }
-                
-                
-            },
-            viewContent(row, name) {
-                // this.resultVisible = true;
-                this.curIp = row.ip;
-                this.curName = name;
 
-                let routeData = this.$router.resolve(
-                    { path: `/assets/update/${row.ip}/${this.curName}` }
-                );
-                window.open(routeData.href, '_blank');
-                // this.$router.push(
-                //     { 
-                //         name: 'assets-update', 
-                //         params: { 
-                //                 ip: row.ip, 
-                //                 curName: name,
-                //         }, 
-                //     });
-                
-            },
-            handleDelete (data) {
-
-            },
-            handleSelectionChange(val) {
-                this.multipleSelection = val;
-            },
-            handleCurrentChange(val) {
-                this.pages.curPage = val;
-                // this.ListUser("page");
-            },
+                Message.success(`${process}操作已提交`);
+            }).catch((err) => {
+                console.log(err);
+                Message.info(`${process}操作已取消`);       
+            });
         },
-        mounted () {
+        runProcess(action, name) {
+            if (this.multipleSelection.length === 0) {
+                return Message.error("请先勾选需要更新的服务器");
+            }
+
+            let title = "";
+            let ip = this.multipleSelection.map(item => item.ip);
+
+            switch (action) {
+                case "sin":
+                    title = "服务器: " + ip.join("&") + ", 确定操作: " + name + "吗？";
+                    this.open('sin', title, name);
+                    break
+                case "mul":
+                    title = "服务器: " + ip.join("&") + ", 确定操作: " + this.selectVal.join("&") + "吗？";
+                    this.open('mul', title, this.selectVal.join("&"));
+                    break
+            }
             
         },
-    }
+        viewContent(row, name) {
+            this.curIp = row.ip;
+            this.curName = name;
+
+            let routeData = this.$router.resolve(
+                { path: `/assets/update/${row.ip}/${this.curName}` }
+            );
+            window.open(routeData.href, '_blank');
+        },
+        viewContent2(row, name) {
+            this.content = [];
+            this.resultVisible = true;
+            this.curIp = row.ip;
+            this.curName = name;
+            this.print();
+            // let routeData = this.$router.resolve(
+            //     { path: `/assets/update/${row.ip}/${this.curName}` }
+            // );
+            // window.open(routeData.href, '_blank');
+        },
+        print() {
+            for(let i = 0; i < 100; i++){
+                setTimeout(() => {
+                    this.content.push("this is test data!!\n")
+                }, 500);
+            }
+        },
+        handleDelete (data) {
+
+        },
+        handleSelectionChange(val) {
+            this.multipleSelection = val;
+        },
+        handleCurrentChange(val) {
+            this.pages.curPage = val;
+            // this.ListUser("page");
+        },
+    },
+    mounted () {
+
+    },
+}
 </script>
 
 <style lang="scss" scoped>
 .box {
     padding: 15px;
 }
-.sestion-2, .sestion-1-2, .sestion-3, .table, .page, .result-data {
+.sestion-2, .sestion-1-2, .sestion-3, .table, .page, .result-data, .sestion-4 {
     margin-top: 16px;
 }
 .cell button {
@@ -473,7 +535,7 @@
     overflow: auto;
     color: #c3c3c3;
     background-color: #292828;
-    padding: 6px 12px;
+    padding: 16px;
     box-sizing: border-box;
     width: auto;
     margin-top: 10px;
@@ -494,6 +556,23 @@
 }
 .detail-content {
     margin-top: 10px;
+}
+.detail-2 {
+    font-size: 14px;
+}
+.upload {
+    float: left;
+    margin-bottom: 19px;
+}
+.size {
+    font-size: 12px;
+    color: #e48686;
+}
+.upload-demo {
+    text-align: left;
+}
+.result-data {
+    overflow-y: auto;
 }
 :deep .el-popover__title {
     font-weight: 600;

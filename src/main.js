@@ -3,6 +3,7 @@ import App from './App.vue'
 import './registerServiceWorker'
 import router from './router'
 import store from './store'
+
 //路由守卫, 访问入口
 import './router/verification'
 
@@ -50,6 +51,8 @@ import { Switch } from 'element-ui'
 import { Statistic } from 'element-ui'
 import { ButtonGroup } from 'element-ui'
 import { Popover } from 'element-ui'
+import { Upload } from 'element-ui'
+import { Progress } from 'element-ui'
 import VueBus from 'vue-bus';
 import VuePageTransition from 'vue-page-transition'
 
@@ -94,6 +97,8 @@ Vue.use(Switch);
 Vue.use(Statistic);
 Vue.use(ButtonGroup);
 Vue.use(Popover);
+Vue.use(Upload);
+Vue.use(Progress);
 Vue.use(VueBus);
 
 
