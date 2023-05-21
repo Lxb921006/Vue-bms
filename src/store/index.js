@@ -3,13 +3,14 @@ import Vuex from 'vuex'
 import addRouters from './permission'
 import userDetail from './userdetail'
 import runningProcess from './process'
-import createPersistedState from 'vuex-persistedstate'
+// import createPersistedState from 'vuex-persistedstate'
 
 
-Vue.use(Vuex)
+Vue.use(Vuex);
+Vue.config.devtools = true;
 
 export default new Vuex.Store({
-  plugins: [createPersistedState()],
+  // plugins: [createPersistedState()],
   state: {
   },
   mutations: {

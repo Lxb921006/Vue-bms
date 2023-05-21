@@ -63,7 +63,6 @@ export default {
             let old = this.$store.state.runningProcess.running;
             let data = old.filter(tab => tab.name != this.curName);
             store.commit("REMOVE_PROCESS", data);
-         
         },
         wsInit () {
             if (typeof(WebSocket) === "undefined") {

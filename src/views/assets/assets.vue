@@ -96,7 +96,7 @@
                             <el-button-group>
                                 <!-- <el-button type="primary"  size="mini">全部</el-button> -->
                                 <el-button type="warning"  size="mini">进行中</el-button>
-                                <el-button type="success" size="mini">成功</el-button>
+                                <el-button type="success" size="mini">完成</el-button>
                                 <el-button type="danger"  size="mini">失败</el-button>
                             </el-button-group>
                         </el-col>
@@ -172,21 +172,20 @@
                                 </el-row>
                                 <el-button slot="reference" type="warning"  size="mini" plain>进行中...</el-button>
                             </el-popover>
-                            <el-tag effect="plain"  type="success" v-else-if="scope.row.status == 200">成功</el-tag>
+                            <el-tag effect="plain"  type="success" v-else-if="scope.row.status == 200">完成</el-tag>
                             <el-tag effect="plain"  type="danger" v-else-if="scope.row.status == 300">失败</el-tag>
                             <el-tag effect="plain"  v-else-if="scope.row.status == 400">全部</el-tag>
                             <el-tag effect="plain"  v-else>无操作</el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="process2" label="更新进度" width="250">
+                    <!-- <el-table-column prop="process2" label="更新进度" width="250">
                         <template slot-scope="scope">
                             <el-progress :percentage="100" status="success" v-if="scope.row.status == 200"></el-progress>
                             <el-progress :percentage="100" status="success" v-else-if="scope.row.status == 300"></el-progress>
                             <el-progress :percentage="50" v-else-if="scope.row.status == 100"></el-progress>
                             <el-progress :percentage="0" v-else></el-progress>
                         </template>
-                        
-                    </el-table-column>
+                    </el-table-column> -->
                     <el-table-column prop="process" label="过程" width="250">
                         <template slot-scope="scope">
                             <el-popover                
@@ -290,8 +289,6 @@ import { Message, MessageBox } from 'element-ui'
 import { mapState, mapGetters } from 'vuex'
 import store from '../../store/index'
 
-
-
 export default {
     name: "assets",
     data () {
@@ -310,10 +307,10 @@ export default {
             curName: "",
             resultVisible: false,
             processList: [
-                {pid:2, name: "docker更新", action: 1},
-                {pid:4, name: "java更新", action: 1},
-                {pid:5, name: "重启docker", action: 2},
-                {pid:6, name: "重启java", action: 2},
+                {pid:2, name: "docker更新", action: 1, value: "dockerUpdate"},
+                {pid:4, name: "java更新", action: 1, value: "javaUpdate"},
+                {pid:5, name: "重启docker", action: 2, value: "dockerReload"},
+                {pid:6, name: "重启java", action: 2, value: "javaReload"},
             ],
             pages: {
                 curPage:1,
@@ -374,7 +371,7 @@ export default {
     methods: {
         submitUpload() {
             if (this.$refs.upload.uploadFiles.length === 0) {
-                return Message.error('请先选择需要上传的文件')
+                return Message.error('请选取文件')
             }
 
             this.$refs.upload.submit();
@@ -446,7 +443,7 @@ export default {
         },
         runProcess(action, name) {
             if (this.multipleSelection.length === 0) {
-                return Message.error("请先勾选需要更新的服务器");
+                return Message.error("请勾选服务器");
             }
 
             let title = "";
@@ -479,10 +476,6 @@ export default {
             this.curIp = row.ip;
             this.curName = name;
             this.print();
-            // let routeData = this.$router.resolve(
-            //     { path: `/assets/update/${row.ip}/${this.curName}` }
-            // );
-            // window.open(routeData.href, '_blank');
         },
         print() {
             for(let i = 0; i < 100; i++){
