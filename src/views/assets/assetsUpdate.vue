@@ -1,0 +1,137 @@
+<template>
+    <div class="box">
+        <div class="content">
+            <div class="result-title">
+                    <el-card>
+                        <el-divider><strong><i class="el-icon-platform-eleme"></i>操作日志</strong></el-divider>
+                        <p class="op-name">
+                            <el-row :gutter="10">
+                                <el-col :span="1.9" >
+                                    <el-tag effect="plain"  type="success">{{ ip }}</el-tag>
+                                </el-col>
+                                <el-col :span="1.9" >
+                                    <el-tag effect="plain"  type="success">{{ curName }}</el-tag>
+                                </el-col>
+                            </el-row>
+                        </p>
+                    </el-card>
+                </div>
+                <div class="result-data">
+                    <el-card class="layout-no" v-loading="updateLoading"
+                            element-loading-text="拼命更新中"
+                            element-loading-spinner="el-icon-loading">
+                        <el-divider><strong><i class="el-icon-platform-eleme"></i>实时更新日志</strong></el-divider>
+                        <div class="format-code">
+                            <pre><code>{{ content.join('') }}</code></pre>
+                        </div>
+                    </el-card>
+                </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { Message } from 'element-ui';
+import { mapState } from 'vuex'
+import store from '../../store/index'
+import wssUrl from "../../utils/wssUrl";
+
+export default {
+    name: "assetsUpdate",
+    data () {
+        return {
+            updateLoading: false,
+            curName: "",
+            content: [],
+            ip: "",
+        }
+    },
+    // computed: {
+    //     ...mapState({
+    //         'running': state => state.runningProcess.running,
+    //     })
+    // },
+    methods: {
+        print() {
+            for(let i = 0; i < 100; i++){
+                setTimeout(() => {
+                    this.content.push("this is test data!!\n")
+                }, 500);
+                let div = document.querySelector(".result-data");
+                div.scrollTop = div.scrollHeight - div.clientHeight;
+            }
+            let old = this.$store.state.runningProcess.running;
+            let data = old.filter(tab => tab.name != this.curName);
+            store.commit("REMOVE_PROCESS", data);
+        },
+        wsInit () {
+            if (typeof(WebSocket) === "undefined") {
+                Message.error("您的浏览器不支持socket");
+            } else {
+                // 实例化socket
+                this.wsUrl = `ws://${wssUrl.replace(/http:\/\//, '')}/ws/process/`;
+                this.socket = new WebSocket(this.wsUrl);
+                // 监听socket连接
+                this.socket.onopen = this.open;
+                // 监听socket错误信息
+                this.socket.onerror = this.error;
+                // 监听socket消息
+                this.socket.onmessage = this.getMessage;
+                // 监听socket关闭消息
+                this.socket.onclose = this.close;
+            }
+        },
+        open () {
+            // Message.success('websocket连接成功')
+            this.send();
+        },
+        error () {
+            Message.error("websocket连接失败");
+        },
+        getMessage (msg) {
+            let jd = JSON.parse(msg.data);
+            let div = document.querySelector(".result-data");
+            div.scrollTop = div.scrollHeight - div.clientHeight;
+        },
+        send () {
+            // this.socket.send(this.chatContent+'|'+this.value);
+            this.socket.send(this.chatContent);
+        },
+        close () {
+            Message.error("websocket连接已关闭");
+        },
+    },
+    mounted () {
+        this.curName = this.$route.params.name;
+        this.ip =  this.$route.params.ip;
+        this.print();
+    },
+    
+}
+</script>
+
+<style lang="scss" scoped>
+.result-data {
+    margin-top: 20px;
+    height: 800px;
+    overflow-y: auto;
+}
+.op-name {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 16px;
+}
+.format-code {
+    height: 700px;
+    text-align: justify;
+    font-size: 17px;
+    overflow: auto;
+    color: #c3c3c3;
+    background-color: #292828;
+    padding: 16px;
+    box-sizing: border-box;
+    width: auto;
+    margin-top: 10px;
+}
+</style>

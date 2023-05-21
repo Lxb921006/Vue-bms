@@ -15,7 +15,7 @@
                     <el-col :span="3">
                         <el-input clearable size="small" @clear="ListUser('search')" placeholder="请输入号码搜索" suffix-icon="el-icon-date" v-model="tel"></el-input>
                     </el-col>
-                    <el-col :span="3">
+                    <el-col :span="2">
                         <el-select v-model="rolename" placeholder="请输入角色搜索" clearable size="small" @clear="ListUser('search')">
                             <el-option
                                 v-for="item in roles"
@@ -35,7 +35,7 @@
                     <el-col :span="2.5" v-if="!isHidden('/user/add', this.$router.options.routes)">
                         <el-button size="small" type="primary" icon="el-icon-document-add" @click="clearData" v-if="isHidden('/user/add', permissionList)">添加用户</el-button>
                     </el-col>
-                    <el-col :span="2">
+                    <el-col :span="1.9">
                         <el-popconfirm :title="'确定删除id为【 '+multipleSelection.map(item=>item.ID)+' 】吗?'"
                                 icon="el-icon-info"
                                 icon-color="red"
@@ -647,9 +647,9 @@ export default {
 :deep .el-dialog--center .el-dialog__footer {
     background-color: #f9f9f9;
 }
-.col-5 {
-    position: relative;
-    width: 42px;
-    right: 41px;
-}
+// .col-5 {
+//     position: relative;
+//     width: 42px;
+//     right: 41px;
+// }
 </style>
