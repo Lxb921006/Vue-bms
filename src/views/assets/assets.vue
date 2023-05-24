@@ -64,7 +64,7 @@
                             :limit="10"
                             :auto-upload="false">
                             <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-                            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+                            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">分发到指定服务器</el-button>
                             <div slot="tip" class="el-upload__tip size">这里可以上传文件, 系统会批量的分发到勾选的服务器然后再点击对应按钮更新或重启</div>
                         </el-upload>
                     </el-row>
@@ -149,7 +149,7 @@
                 >
                     <el-table-column type="selection" width="55"></el-table-column>
                     <el-table-column prop="ID" label="id"></el-table-column>
-                    <el-table-column prop="ip" label="服务器" ></el-table-column>
+                    <el-table-column prop="ip" label="服务器" width="160"></el-table-column>
                     <el-table-column prop="ouser" label="最近一次操作人" width="160"></el-table-column>
                     <el-table-column prop="status" label="更新状态" width="160">
                         <template slot-scope="scope">
@@ -312,6 +312,12 @@ export default {
                 {pid:5, name: "重启docker", action: 2, value: "dockerReload"},
                 {pid:6, name: "重启java", action: 2, value: "javaReload"},
             ],
+            processName: {
+                "docker更新": "dockerUpdate", 
+                "java更新": "javaUpdate", 
+                "重启docker": "javaUpdate", 
+                "重启java": "javaReload"
+            },
             pages: {
                 curPage:1,
                 pageSize:5,
@@ -322,7 +328,7 @@ export default {
                 {
                     ID: 1,
                     ouser: "test",
-                    ip: "1.1.1.1",
+                    ip: "43.134.182.215",
                     status: 100,
                     start: "2023-05-14 15:02:36",
                     end: "2023-05-14 15:02:36",
@@ -372,6 +378,10 @@ export default {
         submitUpload() {
             if (this.$refs.upload.uploadFiles.length === 0) {
                 return Message.error('请选取文件')
+            }
+
+            if (this.multipleSelection.length === 0) {
+                return Message.error('请选勾选服务器')
             }
 
             this.$refs.upload.submit();
@@ -466,7 +476,7 @@ export default {
             this.curName = name;
 
             let routeData = this.$router.resolve(
-                { path: `/assets/update/${row.ip}/${this.curName}` }
+                { path: `/assets/update/${row.ip}/${this.processName[this.curName]}` }
             );
             window.open(routeData.href, '_blank');
         },

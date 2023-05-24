@@ -43,7 +43,7 @@ export default {
             updateLoading: true,
             curName: "",
             content: [],
-            ip: "",
+            ip: "",      
         }
     },
     // computed: {
