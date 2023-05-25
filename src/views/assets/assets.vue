@@ -287,6 +287,7 @@
 <script>
 import { Message, MessageBox } from 'element-ui'
 import { mapState, mapGetters } from 'vuex'
+import { v4 as uuidv4 } from 'uuid';
 import store from '../../store/index'
 
 export default {
@@ -471,32 +472,20 @@ export default {
             }
             
         },
+        createUuid() {
+            return uuidv4();
+        },
         viewContent(row, name) {
             this.curIp = row.ip;
             this.curName = name;
-
+            let uid = this.createUuid();
+            
             let routeData = this.$router.resolve(
-                { path: `/assets/update/${row.ip}/${this.processName[this.curName]}` }
+                { path: `/assets/update/${row.ip}/${this.processName[this.curName]}/${uid}` }
             );
             window.open(routeData.href, '_blank');
         },
-        viewContent2(row, name) {
-            this.content = [];
-            this.resultVisible = true;
-            this.curIp = row.ip;
-            this.curName = name;
-            this.print();
-        },
-        print() {
-            for(let i = 0; i < 100; i++){
-                setTimeout(() => {
-                    this.content.push("this is test data!!\n")
-                }, 500);
-            }
-        },
-        handleDelete (data) {
-
-        },
+        handleDelete (data) {},
         handleSelectionChange(val) {
             this.multipleSelection = val;
         },
@@ -506,7 +495,7 @@ export default {
         },
     },
     mounted () {
-
+        // console.log(uuidv4());
     },
 }
 </script>

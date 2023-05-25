@@ -24,7 +24,7 @@ const routes = [
     component: () => import('../views/assets/assets')
   },
   {
-    path: '/assets/update/:ip/:name',
+    path: '/assets/update/:ip/:name/:uuid',
     // path: '/ga',
     name: 'assets-update',
     meta: { name: '查看更新' },
