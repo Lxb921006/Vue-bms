@@ -149,8 +149,9 @@
                 >
                     <el-table-column type="selection" width="55"></el-table-column>
                     <el-table-column prop="ID" label="id"></el-table-column>
+                    <el-table-column prop="project" label="项目"></el-table-column>
                     <el-table-column prop="ip" label="服务器" width="160"></el-table-column>
-                    <el-table-column prop="ouser" label="最近一次操作人" width="160"></el-table-column>
+                    <el-table-column prop="operator" label="最近一次操作人" width="160"></el-table-column>
                     <el-table-column prop="status" label="更新状态" width="160">
                         <template slot-scope="scope">
                             <el-popover
@@ -328,31 +329,35 @@ export default {
             dataList: [
                 {
                     ID: 1,
-                    ouser: "test",
-                    ip: "43.134.182.215",
+                    operator: "test",
+                    project: "腾讯",
+                    ip: "43.156.170.122",
                     status: 100,
                     start: "2023-05-14 15:02:36",
                     end: "2023-05-14 15:02:36",
                 },
                 {
                     ID: 2,
-                    ouser: "test",
+                    operator: "test",
                     ip: "1.1.1.2",
+                    project: "百度",
                     status: 200,
                     start: "2023-05-14 15:02:36",
                     end: "2023-05-14 15:02:36",
                 },
                 {
                     ID: 3,
-                    ouser: "test",
+                    operator: "test",
                     ip: "1.1.1.3",
+                    project: "百度",
                     status: 300,
                     start: "2023-05-14 15:02:36",
                     end: "2023-05-14 15:02:36",
                 },
                 {
                     ID: 4,
-                    ouser: "test",
+                    operator: "test",
+                    project: "百度",
                     ip: "1.1.1.4",
                     status: 100,
                     start: "2023-05-14 15:02:36",
@@ -360,7 +365,8 @@ export default {
                 },
                 {
                     ID: 5,
-                    ouser: "test",
+                    project: "腾讯",
+                    operator: "test",
                     ip: "1.1.1.5",
                     status: 500,
                     start: "2023-05-14 15:02:36",
@@ -374,7 +380,11 @@ export default {
             'running': state => state.runningProcess.running,
         }),
     },
-    watch: {},
+    // watch: {
+    //     running(newVal, oldVal) {
+    //         store.commit("ADD_PROCESS", newVal);
+    //     }
+    // },
     methods: {
         submitUpload() {
             if (this.$refs.upload.uploadFiles.length === 0) {
