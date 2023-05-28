@@ -512,7 +512,12 @@ export default {
 
 <style lang="scss" scoped>
 .box {
-    padding: 15px;
+    // padding: 15px;
+    padding: 21px;
+    overflow-y: auto;
+    height: 100%;
+    /* margin-bottom: 27px; */
+    padding-top: 0px;
 }
 .sestion-2, .sestion-1-2, .sestion-3, .table, .page, .result-data, .sestion-4 {
     margin-top: 16px;
