@@ -20,4 +20,6 @@ export const getRolePerms= (params) => get("/role/roleperms?user="+ sessionStora
 export const getPermsTree= (params) => get("/role/pmenu?user="+ sessionStorage.getItem("user") +"&token="+ sessionStorage.getItem("token"), params);
 export const getUserDetail= (params) => get("/user/getinfobyname?user="+ sessionStorage.getItem("user") +"&token="+ sessionStorage.getItem("token"), params);
 export const getOperateLogList= (params) => get("/log/list?user="+ sessionStorage.getItem("user") +"&token="+ sessionStorage.getItem("token"), params);
+export const getAssetsList = (params) => get("/assets/list?user=" + sessionStorage.getItem("user") + "&token=" + sessionStorage.getItem("token"), params);
+export const getProcessStatus = (params) => get("/assets/process/status?user=" + sessionStorage.getItem("user") + "&token=" + sessionStorage.getItem("token"), params);
 

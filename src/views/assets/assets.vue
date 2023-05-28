@@ -4,13 +4,6 @@
             <el-card>
                 <div class="process-info">
                     <el-row :gutter="20">
-                        <!-- <el-col :span="6">
-                            <div>
-                                <el-statistic title="总的的任务">
-                                    <template slot="formatter"> 1024 </template>
-                                </el-statistic>
-                            </div>
-                        </el-col> -->
                         <el-col :span="6">
                             <div>
                                 <el-statistic title="进行中的任务">
@@ -288,6 +281,7 @@
 <script>
 import { Message, MessageBox } from 'element-ui'
 import { mapState, mapGetters } from 'vuex'
+import { getAssetsList, getProcessStatus } from '../../api'
 import { v4 as uuidv4 } from 'uuid';
 import store from '../../store/index'
 
@@ -297,6 +291,10 @@ export default {
         return {
             searchData: "",
             selectVal: [],
+            runningNum: 0,
+            finishedNum: 0,
+            failedNum: 0,
+            cancel: "",
             isJump: true,
             detailView: false,
             updateRunning: [],
@@ -386,6 +384,18 @@ export default {
     //     }
     // },
     methods: {
+        async getProcessStatus() {
+            const resp = await getProcessStatus({})
+            if (resp.data.code !== 10000) {
+                this.$interval.cancel(this.cancel);
+                return Message.error(resp.data.message)
+            }
+
+            this.runningNum = resp.data.running;
+            this.finishedNum = resp.data.finished;
+            this.failedNum = resp.data.failed;
+
+        },
         submitUpload() {
             if (this.$refs.upload.uploadFiles.length === 0) {
                 return Message.error('请选取文件')
@@ -503,6 +513,28 @@ export default {
             this.pages.curPage = val;
             // this.ListUser("page");
         },
+        heartBeatWs() {
+            const ws = new WebSocket('ws://127.0.0.1:9293/assets/status');
+            ws.onopen = () => {
+                console.log('WebSocket连接已打开');
+            // 发送心跳消息
+                setInterval(() => {
+                    ws.send(JSON.stringify({ type: 'heartbeat' }));
+                }, 5000);
+            };
+
+            ws.onmessage = (event) => {
+                console.log('收到消息:', event.data);
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket连接已关闭');
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket连接出错:', error);
+            };
+        }
     },
     mounted () {
         // console.log(uuidv4());
