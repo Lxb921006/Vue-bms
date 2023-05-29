@@ -272,7 +272,7 @@
                     <el-table-column prop="ID" label="id"></el-table-column>
                     <el-table-column prop="project" label="项目"></el-table-column>
                     <el-table-column prop="ip" label="服务器" width="160"></el-table-column>
-                    <el-table-column prop="operator" label="最近一次操作人" width="160"></el-table-column>
+                    <el-table-column prop="operator" label="操作人" width="160"></el-table-column>
                     <el-table-column prop="status" label="更新程序" width="160">
                         <template slot-scope="scope">
                             <el-row :gutter="20" class="process-running-list">
@@ -298,11 +298,11 @@
                         <template slot-scope="scope">
                             <el-popover                
                                 placement="right"
-                                title="查看更新结果"
+                                title="查看更新进度"
                                 width="230"
                                 trigger="click"
                                 >
-                                <el-divider>aa</el-divider>
+                                <el-divider></el-divider>
                                 <el-row :gutter="20" class="process-running-list">
                                     <template v-for="data in processList">
                                         <template >
@@ -312,7 +312,7 @@
                                         </template>
                                     </template>
                                 </el-row>
-                                <el-link slot="reference" type="success">查看更新结果</el-link>
+                                <el-link slot="reference" type="success">查看更新进度</el-link>
                             </el-popover>
                         </template>
                     </el-table-column>
