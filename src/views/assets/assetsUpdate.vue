@@ -43,7 +43,8 @@ export default {
             updateLoading: true,
             curName: "",
             content: [],
-            ip: "",      
+            uuid: "",    
+            id: "",    
         }
     },
     // computed: {
@@ -102,6 +103,7 @@ export default {
             let data = {
                 ip: this.ip,
                 name: this.curName,
+                uuid: this.uuid
             };
             this.socket.send(JSON.stringify(data));
         },

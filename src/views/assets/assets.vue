@@ -131,10 +131,20 @@
                                 <h3 class="title-2">更新设置</h3>
                             </el-row>
                             <el-row :gutter="10" class="detail-content">
-                                <el-col :span="1.9">
+                                <el-col :span="3">
                                    <label class="detail-2">点击更新程序是否在新的页面上打开:</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
                                 </el-col>
                             </el-row>
+                            <!-- <el-row :gutter="10" class="detail-content">
+                                <el-col :span="1.9">
+                                   <label class="detail-2">是否打开更新日志:</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                                </el-col>
+                            </el-row>
+                            <el-row :gutter="10" class="detail-content">
+                                <el-col :span="1.9">
+                                   <label class="detail-2">是否删除更新日志:</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                                </el-col>
+                            </el-row> -->
                         </div>
                     </transition>
                     
@@ -401,7 +411,7 @@
 <script>
 import { Message, MessageBox } from 'element-ui'
 import { mapState, mapGetters } from 'vuex'
-import { getAssetsList, getProcessStatus } from '../../api'
+import { getAssetsList, getProcessStatus, createProcessUpdateRecord } from '../../api'
 import { v4 as uuidv4 } from 'uuid';
 import store from '../../store/index'
 
@@ -482,6 +492,17 @@ export default {
     //     }
     // },
     methods: {
+        async createProcessUpdateRecord(data) {
+            const resp = await createProcessUpdateRecord({
+                ip: data.ip,
+                uuid: data.uuid,
+                project: data.project,
+                operator: "lxb",
+                update_name: data.update_name,
+            })
+
+            return resp
+        },
         loopRunning() {
             this.timer = setInterval(() => {
                 // let total = this.finishedNum + this.failedNum;
@@ -549,13 +570,15 @@ export default {
                     case 'sin':
                         for (let i = 0; i < this.multipleSelection.length; i++) {
                             ip = this.multipleSelection[i].ip;
-                            data["id"] = this.uniqueRandom();
-                            data["ip"] = ip;
-                            data["name"] = process;
-                            store.commit("ADD_PROCESS", data);
-                            data = {};
+                            // data["id"] = this.uniqueRandom();
+                            // data["ip"] = ip;
+                            // data["name"] = process;
+                            // store.commit("ADD_PROCESS", data);
+                            // data = {};
+                            project = this.multipleSelection[i].project;
+                            uuid = this.createUuid();
                             if (this.isJump) {
-                                params = {ip};
+                                params = {ip, uuid, project};
                                 this.viewContent(params, process);
                             };
                         }
@@ -564,13 +587,15 @@ export default {
                         for (let i = 0; i < this.multipleSelection.length; i++) {
                             for (let t = 0; t < this.selectVal.length; t++) {
                                 ip = this.multipleSelection[i].ip;
-                                data["id"] = this.uniqueRandom();
-                                data["ip"] = ip;
-                                data["name"] = this.selectVal[t];
-                                store.commit("ADD_PROCESS", data);
-                                data = {};
+                                // data["id"] = this.uniqueRandom();
+                                // data["ip"] = ip;
+                                // data["name"] = this.selectVal[t];
+                                // store.commit("ADD_PROCESS", data);
+                                // data = {};
+                                uuid = this.createUuid();
+                                project = this.multipleSelection[i].project;
                                 if (this.isJump) {
-                                    params = {ip};
+                                    params = {ip, uuid, project};
                                     this.viewContent(params, this.selectVal[t]);
                                 };
                             }
@@ -589,7 +614,12 @@ export default {
                 return Message.error("请勾选服务器");
             }
 
+            let dd = {};
+            let data = [];
 
+            for (let i = 0; i< this.multipleSelection.length; i++) {
+                dd['ip'] = this.multipleSelection[i].ip;
+            }
 
             let title = "";
             let ip = this.multipleSelection.map(item => item.ip);
@@ -612,12 +642,22 @@ export default {
             return uuidv4();
         },
         viewContent(row, name) {
+            let data = {};
             this.curIp = row.ip;
             this.curName = name;
-            let uid = this.createUuid();
+
+            data['ip'] = row.ip;
+            data['update_name'] = name;
+            data['uuid'] = row.uuid;
+            data['ip'] = row.ip;
             
+            resp = this.createProcessUpdateRecord(data);
+            if (resp.data.code !== 10000) {
+                return Message.error(resp.data.message)
+            }
+
             let routeData = this.$router.resolve(
-                { path: `/assets/update/${row.ip}/${this.processName[this.curName]}/${uid}` }
+                { path: `/assets/update/${row.ip}/${this.processName[name]}/${row.uuid}` }
             );
             window.open(routeData.href, '_blank');
         },
@@ -705,6 +745,8 @@ export default {
 .detail {
     text-align: left;
     margin-bottom: 45px;
+    border-bottom: 1px solid #f3f3f3;
+    padding-bottom: 11px;
 }
 .title-2 {
     height: 50px;
