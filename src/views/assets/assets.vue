@@ -87,13 +87,6 @@
                 <el-divider><i class="el-icon-s-platform"></i>服务器列表</el-divider>
                 <div class="search">
                     <el-row :gutter=10>
-                        <!-- <el-col :span=3.9>
-                            <el-button-group>
-                                <el-button type="warning"  size="mini">进行中</el-button>
-                                <el-button type="success" size="mini">完成</el-button>
-                                <el-button type="danger"  size="mini">失败</el-button>
-                            </el-button-group>
-                        </el-col> -->
                         <el-col :span="3.9">
                             <el-input v-model="searchData" placeholder="请输入" size="mini" clearable>
                                 <el-button slot="append" icon="el-icon-search" size="mini"></el-button>
@@ -131,7 +124,7 @@
                                 <h3 class="title-2">更新设置</h3>
                             </el-row>
                             <el-row :gutter="10" class="detail-content">
-                                <el-col :span="3">
+                                <el-col :span="4">
                                    <label class="detail-2">点击更新程序是否在新的页面上打开:</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
                                 </el-col>
                             </el-row>
@@ -283,6 +276,7 @@
                     <el-table-column prop="project" label="项目"></el-table-column>
                     <el-table-column prop="ip" label="服务器" width="160"></el-table-column>
                     <el-table-column prop="operator" label="操作人" width="160"></el-table-column>
+                    <el-table-column prop="uuid" label="uuid" width="350"></el-table-column>
                     <el-table-column prop="status" label="更新程序" width="160">
                         <template slot-scope="scope">
                             <el-row :gutter="20" class="process-running-list">
@@ -296,12 +290,9 @@
                             </el-row>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="process2" label="更新进度" width="250">
+                    <el-table-column prop="progress" label="更新进度" width="250">
                         <template slot-scope="scope">
-                            <el-progress :percentage="100" status="success" v-if="scope.row.status == 200"></el-progress>
-                            <el-progress :percentage="100" status="success" v-else-if="scope.row.status == 300"></el-progress>
-                            <el-progress :percentage="50" v-else-if="scope.row.status == 100"></el-progress>
-                            <el-progress :percentage="0" v-else></el-progress>
+                            <el-progress :percentage="scope.row.progress"></el-progress>
                         </template>
                     </el-table-column>
                     <el-table-column prop="process" label="过程" width="250">
@@ -338,25 +329,12 @@
                             <span style="margin-left: 10px">{{ scope.row.end }}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="cost" label="耗时/秒" width="190">
+                    <el-table-column prop="cost_time" label="耗时/秒" width="190">
                         <template slot-scope="scope">
                             <i class="el-icon-time"></i>
-                            <span style="margin-left: 10px">{{ scope.row.cost }}</span>
+                            <span style="margin-left: 10px">{{ scope.row.cost_time }}s</span>
                         </template>
                     </el-table-column>
-                    <!-- <el-table-column prop="operate" label="操作" width="250">
-                        <template slot-scope="scope">
-                            <el-button size="mini" icon="el-icon-edit">编辑</el-button>
-                            <el-popconfirm :title="'确定删除'+scope.row.ip+'吗?'"
-                                icon="el-icon-info"
-                                icon-color="red"
-                                confirm-button-text='删除'
-                                @confirm="handleDelete(scope.row)"
-                            >
-                                <el-button size="mini" type="danger" slot="reference" icon="el-icon-delete-solid" plain>删除</el-button>
-                            </el-popconfirm>
-                        </template>
-                    </el-table-column> -->
                 </el-table>
                 </div>
                 <div class="page">
@@ -410,9 +388,10 @@
 
 <script>
 import { Message, MessageBox } from 'element-ui'
-import { mapState, mapGetters } from 'vuex'
-import { getAssetsList, getProcessStatus, createProcessUpdateRecord } from '../../api'
+import { mapState } from 'vuex'
+import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess } from '../../api'
 import { v4 as uuidv4 } from 'uuid';
+import wssUrl from "../../utils/wssUrl";
 import store from '../../store/index'
 
 export default {
@@ -472,11 +451,14 @@ export default {
                     operator: "test",
                     project: "腾讯",
                     ip: "43.156.170.122",
-                    status: 100,
+                    progress: 83,
+                    uuid: "USD230FK-193JASD0AS-913UIHSA9D-1238NKG9",
                     start: "2023-05-14 15:02:36",
                     end: "2023-05-14 15:02:36",
-					cost: 1,
-                    action: 1
+					cost_time: 8,
+                    action: 1,
+                    update_name: "",
+
                 },
             ],
         }
@@ -492,23 +474,8 @@ export default {
     //     }
     // },
     methods: {
-        async createProcessUpdateRecord(data) {
-            const resp = await createProcessUpdateRecord({
-                ip: data.ip,
-                uuid: data.uuid,
-                project: data.project,
-                operator: "lxb",
-                update_name: data.update_name,
-            })
-
-            return resp
-        },
         loopRunning() {
             this.timer = setInterval(() => {
-                // let total = this.finishedNum + this.failedNum;
-                // if (total === this.runningNum) {
-                //     clearInterval(this.timer);
-                // }
                 this.getProcessStatus();
             }, 3000)
         },
@@ -556,6 +523,9 @@ export default {
             this.detailICon = this.detailICon === "el-icon-arrow-down" ? "el-icon-arrow-up" : "el-icon-arrow-down";
             this.detailView = this.detailView === false ? true : false;
         },
+        createUuid() {
+            return uuidv4();
+        },
         open(action, title, process) {
             MessageBox.confirm(title, '提示', {
                 confirmButtonText: '确定',
@@ -570,34 +540,23 @@ export default {
                     case 'sin':
                         for (let i = 0; i < this.multipleSelection.length; i++) {
                             ip = this.multipleSelection[i].ip;
-                            // data["id"] = this.uniqueRandom();
-                            // data["ip"] = ip;
-                            // data["name"] = process;
-                            // store.commit("ADD_PROCESS", data);
-                            // data = {};
                             project = this.multipleSelection[i].project;
                             uuid = this.createUuid();
-                            if (this.isJump) {
-                                params = {ip, uuid, project};
-                                this.viewContent(params, process);
-                            };
+                            this.isJump
+                            params = {ip, uuid, project};
+                            this.jumpOtherPageWsRunning(params, process);
+                         
                         }
                         break
                     case 'mul':
                         for (let i = 0; i < this.multipleSelection.length; i++) {
                             for (let t = 0; t < this.selectVal.length; t++) {
                                 ip = this.multipleSelection[i].ip;
-                                // data["id"] = this.uniqueRandom();
-                                // data["ip"] = ip;
-                                // data["name"] = this.selectVal[t];
-                                // store.commit("ADD_PROCESS", data);
-                                // data = {};
                                 uuid = this.createUuid();
                                 project = this.multipleSelection[i].project;
-                                if (this.isJump) {
-                                    params = {ip, uuid, project};
-                                    this.viewContent(params, this.selectVal[t]);
-                                };
+                                params = {ip, uuid, project};
+                                this.jumpOtherPageWsRunning(params, this.selectVal[t]);
+                           
                             }
                         }
                         break
@@ -612,13 +571,6 @@ export default {
         runProcess(action, name) {
             if (this.multipleSelection.length === 0) {
                 return Message.error("请勾选服务器");
-            }
-
-            let dd = {};
-            let data = [];
-
-            for (let i = 0; i< this.multipleSelection.length; i++) {
-                dd['ip'] = this.multipleSelection[i].ip;
             }
 
             let title = "";
@@ -638,10 +590,26 @@ export default {
             this.isLoop = true;
             
         },
-        createUuid() {
-            return uuidv4();
+        async createProcessUpdateRecord(data) {
+            const resp = await createProcessUpdateRecord({
+                ip: data.ip,
+                uuid: data.uuid,
+                project: data.project,
+                operator: "lxb",
+                update_name: data.update_name,
+            })
+
+            return resp
         },
-        viewContent(row, name) {
+        async currentPageRunnung(data) {
+            const resp = await runningProcess({
+                ip: data.ip,
+                uuid: data.uuid,
+                update_name: data.name
+            });
+            return resp
+        },
+        runningJumpOrNot(row, name) {
             let data = {};
             this.curIp = row.ip;
             this.curName = name;
@@ -649,17 +617,25 @@ export default {
             data['ip'] = row.ip;
             data['update_name'] = name;
             data['uuid'] = row.uuid;
-            data['ip'] = row.ip;
+            data['project'] = row.project;
             
-            resp = this.createProcessUpdateRecord(data);
+            const resp = this.createProcessUpdateRecord(data);
             if (resp.data.code !== 10000) {
                 return Message.error(resp.data.message)
             }
 
-            let routeData = this.$router.resolve(
-                { path: `/assets/update/${row.ip}/${this.processName[name]}/${row.uuid}` }
-            );
-            window.open(routeData.href, '_blank');
+            if (this.isJump) {
+                let routeData = this.$router.resolve(
+                    { path: `/assets/update/${row.ip}/${this.processName[name]}/${row.uuid}` }
+                );
+                window.open(routeData.href, '_blank');
+            } else {
+                const resp = currentPageRunnung(data);
+                if (resp.data.code !== 10000) {
+                    return Message.error(resp.data.message)
+                }
+            }
+            
         },
         handleDelete (data) {},
         handleSelectionChange(val) {
@@ -669,18 +645,22 @@ export default {
             this.pages.curPage = val;
             // this.ListUser("page");
         },
-        heartBeatWs() {
-            const ws = new WebSocket('ws://127.0.0.1:9293/assets/status');
+        singleContent(row, name) {
+            let data = {
+                    ip: row.ip,
+                    name: name,
+                    uuid: row.uuid
+                }
+            const ws = new WebSocket(this.wsUrl+"/assets/ws");
             ws.onopen = () => {
                 console.log('WebSocket连接已打开');
-            // 发送心跳消息
-                setInterval(() => {
-                    ws.send(JSON.stringify({ type: 'heartbeat' }));
-                }, 5000);
+                ws.send(JSON.stringify(data));
             };
-
             ws.onmessage = (event) => {
-                console.log('收到消息:', event.data);
+                // console.log('收到消息:', event.data);
+                this.content.push(event.data);
+                let div = document.querySelector(".result-data");
+                div.scrollTop = div.scrollHeight - div.clientHeight;
             };
 
             ws.onclose = () => {
@@ -688,13 +668,12 @@ export default {
             };
 
             ws.onerror = (error) => {
-                console.error('WebSocket连接出错:', error);
+                Message.error('WebSocket连接出错:', error);
             };
-        }
+        },
+
     },
     mounted () {
-     
-        // this.loopRunning();
         
     },
 }

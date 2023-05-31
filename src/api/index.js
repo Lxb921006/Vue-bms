@@ -12,6 +12,7 @@ export const removePerms = (params, method) => post("/role/rmperms?user="+ sessi
 export const allotPerms = (params, method) => post("/role/allotperms?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const createRole = (params, method) => post("/role/create?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const createProcessUpdateRecord = (params, method) => post("/assets/process/update/create?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
+export const runningProcess = (params, method) => post("/assets/api?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const getUserList = (params) => get("/user/list?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params);
 export const getRolesName = (params) => get("/role/rolesname?user="+ sessionStorage.getItem("user") +"&token=" + sessionStorage.getItem("token"), params);
 export const getUserPerms = (params) => get("/role/userperms?user="+ sessionStorage.getItem("user") +"&token="+ sessionStorage.getItem("token"), params);
@@ -23,4 +24,5 @@ export const getUserDetail= (params) => get("/user/getinfobyname?user="+ session
 export const getOperateLogList= (params) => get("/log/list?user="+ sessionStorage.getItem("user") +"&token="+ sessionStorage.getItem("token"), params);
 export const getAssetsList = (params) => get("/assets/list?user=" + sessionStorage.getItem("user") + "&token=" + sessionStorage.getItem("token"), params);
 export const getProcessStatus = (params) => get("/assets/process/status?user=" + sessionStorage.getItem("user") + "&token=" + sessionStorage.getItem("token"), params);
+
 
