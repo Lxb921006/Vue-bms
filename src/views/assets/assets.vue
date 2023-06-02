@@ -111,6 +111,9 @@
                         <el-col :span="3.9">
                             <el-button type="primary"  size="mini" @click="runProcess('mul', '')">提交</el-button>
                         </el-col>
+                        <el-col :span="3.9">
+                            <el-button type="primary"  size="mini" icon="el-icon-circle-plus-outline" @click="runProcess('mul', '')">新建</el-button>
+                        </el-col>
                         <el-col :span="2" class="c1">
                             <el-link type="primary" @click="oc">{{ detailContent }}<i :class="detailICon"></i> </el-link>
                         </el-col>
@@ -145,79 +148,16 @@
                     element-loading-text="拼命加载中"
                 >
                     <el-table-column type="selection" width="55"></el-table-column>
-                    <el-table-column prop="ID" label="id"></el-table-column>
+                    <el-table-column prop="id" label="id"></el-table-column>
                     <el-table-column prop="project" label="项目"></el-table-column>
                     <el-table-column prop="ip" label="服务器"></el-table-column>
-                    <!-- <el-table-column prop="operator" label="最近一次操作人" width="160"></el-table-column> -->
-                    <!-- <el-table-column prop="status" label="更新状态" width="160">
-                        <template slot-scope="scope">
-                            <el-popover
-                                v-if="scope.row.status == 100"
-                                placement="right"
-                                title="正在更新的进程"
-                                width="200"
-                                trigger="click"
-                                >
-                                <el-divider></el-divider>
-                                <el-row :gutter="20" class="process-running-list">
-                                    <template v-for="data in running">
-                                        <template>
-                                            <el-col :span="9" :key="data.id + uniqueRandom()" v-if="scope.row.ip == data.ip">
-                                                <el-tag effect="plain" size="mini" type="success">{{ data.name }}</el-tag>
-                                            </el-col>
-                                        </template>
-                                    </template>
-                                </el-row>
-                                <el-button slot="reference" type="warning"  size="mini" plain>进行中...</el-button>
-                            </el-popover>
-                            <el-tag effect="plain"  type="success" v-else-if="scope.row.status == 200">完成</el-tag>
-                            <el-tag effect="plain"  type="danger" v-else-if="scope.row.status == 300">失败</el-tag>
-                            <el-tag effect="plain"  v-else-if="scope.row.status == 400">全部</el-tag>
-                            <el-tag effect="plain"  v-else>无操作</el-tag>
-                        </template>
-                    </el-table-column> -->
-                    <!-- <el-table-column prop="process2" label="更新进度" width="250">
-                        <template slot-scope="scope">
-                            <el-progress :percentage="100" status="success" v-if="scope.row.status == 200"></el-progress>
-                            <el-progress :percentage="100" status="success" v-else-if="scope.row.status == 300"></el-progress>
-                            <el-progress :percentage="50" v-else-if="scope.row.status == 100"></el-progress>
-                            <el-progress :percentage="0" v-else></el-progress>
-                        </template>
-                    </el-table-column> -->
-                    <!-- <el-table-column prop="process" label="过程" width="250">
-                        <template slot-scope="scope">
-                            <el-popover                
-                                placement="right"
-                                title="查看更新结果"
-                                width="230"
-                                trigger="click"
-                                >
-                                <el-divider></el-divider>
-                                <el-row :gutter="20" class="process-running-list">
-                                    <template v-for="data in processList">
-                                        <template >
-                                            <el-col :span="12" :key="data.id">
-                                                <el-button type="warning"  size="mini" plain @click="viewContent2(scope.row, data.name)">{{ data.name }}</el-button>
-                                            </el-col>
-                                        </template>
-                                    </template>
-                                </el-row>
-                                <el-link slot="reference" type="success">查看更新结果</el-link>
-                            </el-popover>
-                        </template>
-                    </el-table-column> -->
+                    
                     <el-table-column prop="start" label="添加时间">
                         <template slot-scope="scope">
                             <i class="el-icon-time"></i>
-                            <span style="margin-left: 10px">{{ scope.row.start }}</span>
+                            <span style="margin-left: 10px">{{ scope.row.start | formatDate }}</span>
                         </template>
                     </el-table-column>
-                    <!-- <el-table-column prop="end" label="结束时间" width="190">
-                        <template slot-scope="scope">
-                            <i class="el-icon-time"></i>
-                            <span style="margin-left: 10px">{{ scope.row.end }}</span>
-                        </template>
-                    </el-table-column> -->
                     <el-table-column prop="operate" label="操作" width="250">
                         <template slot-scope="scope">
                             <el-button size="mini" icon="el-icon-edit">编辑</el-button>
@@ -255,39 +195,43 @@
                         <el-col :span=3.9>
                             <el-button-group>
                                 <!-- <el-button type="primary"  size="mini">全部</el-button> -->
-                                <el-button type="warning"  size="mini">进行中</el-button>
-                                <el-button type="success" size="mini">完成</el-button>
-                                <el-button type="danger"  size="mini">失败</el-button>
+                                <el-button type="warning"  size="mini" @click="getUpdateList(200,'进行中')">进行中</el-button>
+                                <el-button type="success" size="mini" @click="getUpdateList(200,'完成')">完成</el-button>
+                                <el-button type="danger"  size="mini" @click="getUpdateList(200,'失败')">失败</el-button>
                             </el-button-group>
                         </el-col>
-                        <el-col :span="3.9">
-                            <el-input v-model="searchData" placeholder="请输入" size="mini" clearable>
-                                <el-button slot="append" icon="el-icon-search" size="mini"></el-button>
+                        <!-- <el-col :span="3.9">
+                            <el-input v-model="updateListSeach" placeholder="请输入" size="mini" clearable @clear="getUpdateList(100, '')">
+                                <el-button slot="append" icon="el-icon-search" size="mini" @click="getUpdateList(100, '')"></el-button>
                             </el-input>
+                        </el-col> -->
+                        <el-col :span="3.9">
+                            <el-input v-model="updatestatus" placeholder="请输入更新状态" size="mini" clearable @keyup.enter.native="getUpdateList(100, '')" @clear="getUpdateList(100, updatestatus)"></el-input>
+                        </el-col>
+                        <el-col :span="3.9">
+                            <el-input v-model="updateip" placeholder="请输入ip" size="mini" clearable @keyup.enter.native="getUpdateList(100, '')" @clear="getUpdateList(100, updatestatus)"></el-input>
+                        </el-col>
+                        <el-col :span="3.9">
+                            <el-input v-model="updateuuid" placeholder="请输入uuid" size="mini" clearable @keyup.enter.native="getUpdateList(100, '')" @clear="getUpdateList(100, updatestatus)"></el-input>
+                        </el-col>
+                        <el-col :span="3.9">
+                            <el-input v-model="updatename" placeholder="请输入更新程序" size="mini" clearable @keyup.enter.native="getUpdateList(100, '')" @clear="getUpdateList(100, updatestatus)"></el-input>
                         </el-col>
                     </el-row>
                 </div>
                 <div class="table">
-                    <el-table v-loading="tableLoad" stripe  :data="dataList2" @selection-change="handleSelectionChange"
+                    <el-table v-loading="tableLoad2" stripe  :data="dataList2" @selection-change="handleSelectionChange"
                     element-loading-text="拼命加载中"
                 >
                     <el-table-column type="selection" width="55"></el-table-column>
-                    <el-table-column prop="ID" label="id"></el-table-column>
+                    <el-table-column prop="id" label="id"></el-table-column>
                     <el-table-column prop="project" label="项目"></el-table-column>
                     <el-table-column prop="ip" label="服务器" width="160"></el-table-column>
                     <el-table-column prop="operator" label="操作人" width="160"></el-table-column>
                     <el-table-column prop="uuid" label="uuid" width="350"></el-table-column>
-                    <el-table-column prop="status" label="更新程序" width="160">
+                    <el-table-column prop="update_name" label="更新程序" width="160">
                         <template slot-scope="scope">
-                            <el-row :gutter="20" class="process-running-list">
-                                <template v-for="data in processList">
-                                    <template>
-                                        <el-col :span="9" :key="data.id + uniqueRandom()" v-if="scope.row.action == data.action">
-                                            <el-tag effect="plain" size="mini" type="success">{{ data.name }}</el-tag>
-                                        </el-col>
-                                    </template>
-                                </template>
-                            </el-row>
+                            <el-tag effect="plain" size="mini" type="success">{{ scope.row.update_name }}</el-tag>
                         </template>
                     </el-table-column>
                     <el-table-column prop="progress" label="更新进度" width="250">
@@ -297,7 +241,7 @@
                     </el-table-column>
                     <el-table-column prop="process" label="过程" width="250">
                         <template slot-scope="scope">
-                            <el-popover                
+                            <!-- <el-popover                
                                 placement="right"
                                 title="查看更新进度"
                                 width="230"
@@ -305,28 +249,24 @@
                                 >
                                 <el-divider></el-divider>
                                 <el-row :gutter="20" class="process-running-list">
-                                    <template v-for="data in processList">
-                                        <template >
-                                            <el-col :span="12" :key="data.id" v-if="scope.row.action == data.action">
-                                                <el-button type="warning"  size="mini" plain @click="viewContent2(scope.row, data.name)">{{ data.name }}</el-button>
-                                            </el-col>
-                                        </template>
-                                    </template>
+                                    <el-col :span="12">
+                                        <el-button type="warning"  size="mini" plain @click="viewContent2(scope.row, scope.row.update_name)">{{ scope.row.update_name }}</el-button>
+                                    </el-col>
                                 </el-row>
-                                <el-link slot="reference" type="success">查看更新进度</el-link>
-                            </el-popover>
+                            </el-popover> -->
+                            <el-link slot="reference" type="success" @click="viewContent2(scope.row, scope.row.update_name)">查看更新进度</el-link>
                         </template>
                     </el-table-column>
                     <el-table-column prop="start" label="开始时间" width="190">
                         <template slot-scope="scope">
                             <i class="el-icon-time"></i>
-                            <span style="margin-left: 10px">{{ scope.row.start }}</span>
+                            <span style="margin-left: 10px">{{ scope.row.start | formatDate }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column prop="end" label="结束时间" width="190">
                         <template slot-scope="scope">
                             <i class="el-icon-time"></i>
-                            <span style="margin-left: 10px">{{ scope.row.end }}</span>
+                            <span style="margin-left: 10px">{{ scope.row.end | formatDate }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column prop="cost_time" label="耗时/秒" width="190">
@@ -341,11 +281,11 @@
                     <el-pagination
                     background
                     small
-                    @current-change="handleCurrentChange"
-                    :current-page.sync="pages.curPage"
-                    :page-size="pages.pageSize"
+                    @current-change="handleCurrentChange2"
+                    :current-page.sync="pages2.curPage"
+                    :page-size="pages2.pageSize"
                     layout="prev, pager, next, total"
-                    :total="total"
+                    :total="total2"
                     >
                     </el-pagination>
                 </div>
@@ -389,7 +329,7 @@
 <script>
 import { Message, MessageBox } from 'element-ui'
 import { mapState } from 'vuex'
-import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess } from '../../api'
+import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess, getUpdateList } from '../../api'
 import { v4 as uuidv4 } from 'uuid';
 import wssUrl from "../../utils/wssUrl";
 import store from '../../store/index'
@@ -399,6 +339,11 @@ export default {
     data () {
         return {
             searchData: "",
+            updateListSeach: "",
+            updatestatus:"",
+            updateuuid:"",
+            updateip:"",
+            updatename: "",
             selectVal: [],
             runningNum: 0,
             finishedNum: 0,
@@ -407,11 +352,13 @@ export default {
             isJump: true,
             isLoop: false,
             detailView: false,
+            tableLoad2:true,
             updateRunning: [],
             detailContent: "更新设置",
             detailICon: "el-icon-arrow-down",
-            tableLoad: "",
+            tableLoad: true,
             total:5,
+            total2:5,
             content: [],
             curIp: "",
             curName: "",
@@ -432,35 +379,14 @@ export default {
                 curPage:1,
                 pageSize:5,
             },
+            pages2: {
+                curPage:1,
+                pageSize:5,
+            },
             finished: [],
             multipleSelection: [],
-            dataList: [
-                {
-                    ID: 1,
-                    operator: "test",
-                    project: "腾讯",
-                    ip: "43.156.170.122",
-                    status: 100,
-                    start: "2023-05-14 15:02:36",
-                    end: "2023-05-14 15:02:36",
-                },
-            ],
-            dataList2: [
-                {
-                    ID: 1,
-                    operator: "test",
-                    project: "腾讯",
-                    ip: "43.156.170.122",
-                    progress: 83,
-                    uuid: "USD230FK-193JASD0AS-913UIHSA9D-1238NKG9",
-                    start: "2023-05-14 15:02:36",
-                    end: "2023-05-14 15:02:36",
-					cost_time: 8,
-                    action: 1,
-                    update_name: "",
-
-                },
-            ],
+            dataList: [],
+            dataList2: [],
         }
     },
     computed: {
@@ -476,7 +402,7 @@ export default {
     methods: {
         loopRunning() {
             this.timer = setInterval(() => {
-                this.getProcessStatus();
+                this.getUpdateList(100, '');
             }, 3000)
         },
         async getProcessStatus() {
@@ -532,9 +458,9 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                let data = {};
-                let id = "";
                 let ip = "";
+                let uuid = "";
+                let project = "";
                 let params = "";
                 switch (action) {
                     case 'sin':
@@ -544,8 +470,7 @@ export default {
                             uuid = this.createUuid();
                             this.isJump
                             params = {ip, uuid, project};
-                            this.jumpOtherPageWsRunning(params, process);
-                         
+                            this.runningJumpOrNot(params, process);
                         }
                         break
                     case 'mul':
@@ -555,8 +480,7 @@ export default {
                                 uuid = this.createUuid();
                                 project = this.multipleSelection[i].project;
                                 params = {ip, uuid, project};
-                                this.jumpOtherPageWsRunning(params, this.selectVal[t]);
-                           
+                                this.runningJumpOrNot(params, this.selectVal[t]);
                             }
                         }
                         break
@@ -568,10 +492,13 @@ export default {
                 Message.info(`${process}操作已取消`);       
             });
         },
+        // 程序更新的入口
         runProcess(action, name) {
             if (this.multipleSelection.length === 0) {
                 return Message.error("请勾选服务器");
             }
+
+            this.loopRunning();
 
             let title = "";
             let ip = this.multipleSelection.map(item => item.ip);
@@ -590,6 +517,68 @@ export default {
             this.isLoop = true;
             
         },
+        // 资产列表
+        async getAssetsList() {
+            let data = {page:this.pages.curPage};
+            const resp = await getAssetsList(data).catch(err => {
+                this.tableLoad = false;
+            })
+
+            if (resp.data.code !== 10000) {
+                return Message.error(resp.data.message)
+            }
+
+            this.dataList = resp.data.data;
+            this.pages.pageSize = resp.data.pageSize;
+            this.total = resp.data.total;
+            this.tableLoad = false;
+
+        },
+        // 获取更新列表数据
+        async getUpdateList(action, status) {
+            let data = {};
+            let check_status = "";
+            if (status==="进行中") {
+                check_status=400;
+            } else if (status==="完成") {
+                check_status=200;
+            } else if (status==="失败") {
+                check_status=300;
+            }
+            switch (action) {
+                case 100:
+                    data = {
+                        page: this.pages2.curPage,
+                        ip: this.updateip,
+                        uuid: this.updateuuid,
+                        update_name: this.updatename,
+                        // project: this.updateListSeach,
+                        // operator: this.updateListSeach,
+                        status: check_status,
+                    };
+                    break
+                case 200:
+                    data = {
+                        page: this.pages2.curPage,
+                        status: check_status,
+                    };
+                    this.updatestatus = status;
+                    clearInterval(this.timer);
+                    break
+            }
+            
+            const resp = await getUpdateList(data).catch(()=>{this.tableLoad2 = false;})
+            if (resp.data.code !== 10000) {
+                return Message.error(resp.data.message)
+            }
+
+            this.dataList2 = resp.data.data;
+            this.pages2.pageSize = resp.data.pageSize;
+            this.total2 = resp.data.total;
+            this.tableLoad2 = false;
+
+        },
+        // 更新列表添加数据
         async createProcessUpdateRecord(data) {
             const resp = await createProcessUpdateRecord({
                 ip: data.ip,
@@ -597,19 +586,21 @@ export default {
                 project: data.project,
                 operator: "lxb",
                 update_name: data.update_name,
-            })
+            }, this.callMethod)
 
             return resp
         },
-        async currentPageRunnung(data) {
+        // 在当前页面执行
+        async currentPageRunning(data) {
             const resp = await runningProcess({
                 ip: data.ip,
                 uuid: data.uuid,
-                update_name: data.name
-            });
+                update_name: this.processName[data.update_name]
+            }, this.callMethod);
             return resp
         },
-        runningJumpOrNot(row, name) {
+        // 是否在新的页面打开程序更新
+        async runningJumpOrNot(row, name) {
             let data = {};
             this.curIp = row.ip;
             this.curName = name;
@@ -619,18 +610,21 @@ export default {
             data['uuid'] = row.uuid;
             data['project'] = row.project;
             
-            const resp = this.createProcessUpdateRecord(data);
+            // 现在更新列表里创建
+            const resp = await this.createProcessUpdateRecord(data);
             if (resp.data.code !== 10000) {
                 return Message.error(resp.data.message)
             }
-
+            
+            // 在新的页面执行
             if (this.isJump) {
                 let routeData = this.$router.resolve(
                     { path: `/assets/update/${row.ip}/${this.processName[name]}/${row.uuid}` }
                 );
                 window.open(routeData.href, '_blank');
             } else {
-                const resp = currentPageRunnung(data);
+                // 当前页面执行
+                const resp = await this.currentPageRunning(data);
                 if (resp.data.code !== 10000) {
                     return Message.error(resp.data.message)
                 }
@@ -643,7 +637,11 @@ export default {
         },
         handleCurrentChange(val) {
             this.pages.curPage = val;
-            // this.ListUser("page");
+            this.getAssetsList("page");
+        },
+        handleCurrentChange2(val) {
+            this.pages2.curPage = val;
+            this.getUpdateList(100, this.updatestatus);
         },
         singleContent(row, name) {
             let data = {
@@ -671,10 +669,30 @@ export default {
                 Message.error('WebSocket连接出错:', error);
             };
         },
+        callMethod() {},
 
     },
     mounted () {
-        
+        // this.loopRunning();
+        this.getUpdateList(100, '');
+        this.getAssetsList();
+    },
+    filters: {
+        formatDate(date) {
+            var d = date ? new Date(date) : new Date();
+            var year = d.getFullYear();
+            var month = d.getMonth() + 1;
+            var day = d.getDate();
+            var hours = d.getHours();
+            var min = d.getMinutes();
+            var seconds = d.getSeconds();
+            if (month < 10) month = '0' + month;
+            if (day < 10) day = '0' + day;
+            if (hours < 0) hours = '0' + hours;
+            if (min < 10) min = '0' + min;
+            if (seconds < 10) seconds = '0' + seconds;
+            return (year + '-' + month + '-' + day + ' ' + hours + ':' + min + ':' + seconds);
+        },
     },
 }
 </script>

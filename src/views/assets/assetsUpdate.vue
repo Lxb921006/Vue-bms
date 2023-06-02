@@ -47,17 +47,7 @@ export default {
             id: "",    
         }
     },
-    // computed: {
-    //     ...mapState({
-    //         'running': state => state.runningProcess.running,
-    //     })
-    // },
     methods: {
-        updateVuex() {
-            let old = this.$store.state.runningProcess.running;
-            let data = old.filter(tab => tab.name != this.curName);
-            store.commit("REMOVE_PROCESS", data);
-        },
         wsInit () {
             if (typeof(WebSocket) === "undefined") {
                 Message.error("您的浏览器不支持socket");
@@ -90,7 +80,6 @@ export default {
             this.updateLoading = false;
             // Message.error("websocket连接失败");
             this.content.push("websocket连接失败");
-            this.updateVuex();
         },
         getMessage (msg) {
             // let jd = JSON.parse(msg.data);
@@ -108,14 +97,13 @@ export default {
             this.socket.send(JSON.stringify(data));
         },
         close () {
-            this.updateVuex();
             // Message.error("websocket连接已关闭");
         },
     },
     mounted () {
         this.curName = this.$route.params.name;
         this.ip =  this.$route.params.ip;
-        // this.print();
+        this.uuid = this.$route.params.uuid;
         this.wsInit();
     },
     
