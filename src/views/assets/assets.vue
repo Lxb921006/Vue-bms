@@ -221,9 +221,9 @@
                 </div>
                 <div class="table">
                     <el-table v-loading="tableLoad2" stripe  :data="dataList2" @selection-change="handleSelectionChange"
-                    element-loading-text="拼命加载中"
+                    element-loading-text="拼命加载中" :row-key="getRowKey"
                 >
-                    <el-table-column type="selection" width="55"></el-table-column>
+                    <el-table-column type="selection" width="55" :reserve-selection="true"></el-table-column>
                     <el-table-column prop="id" label="id"></el-table-column>
                     <el-table-column prop="project" label="项目"></el-table-column>
                     <el-table-column prop="ip" label="服务器" width="160"></el-table-column>
@@ -232,6 +232,13 @@
                     <el-table-column prop="update_name" label="更新程序" width="160">
                         <template slot-scope="scope">
                             <el-tag effect="plain" size="mini" type="success">{{ scope.row.update_name }}</el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="status" label="更新状态" width="160">
+                        <template slot-scope="scope">
+                            <el-button type="warning"  size="mini" v-if="scope.row.status === 400" :loading="true" plain>进行中</el-button>
+                                <el-button type="success" size="mini" v-else-if="scope.row.status === 200" plain>完成</el-button>
+                                <el-button type="danger"  size="mini" v-else-if="scope.row.status === 300" plain>失败</el-button>
                         </template>
                     </el-table-column>
                     <el-table-column prop="progress" label="更新进度" width="250">
@@ -254,7 +261,7 @@
                                     </el-col>
                                 </el-row>
                             </el-popover> -->
-                            <el-link slot="reference" type="success" @click="viewContent2(scope.row, scope.row.update_name)">查看更新进度</el-link>
+                            <el-link slot="reference" type="success" @click="viewContent(scope.row)">查看更新进度</el-link>
                         </template>
                     </el-table-column>
                     <el-table-column prop="start" label="开始时间" width="190">
@@ -304,6 +311,9 @@
                         <p class="op-name">
                             <el-row :gutter="10">
                                 <el-col :span="1.9" >
+                                    <el-tag effect="plain"  type="success">{{ curProject }}</el-tag>
+                                </el-col>
+                                <el-col :span="1.9" >
                                     <el-tag effect="plain"  type="success">{{ curIp }}</el-tag>
                                 </el-col>
                                 <el-col :span="1.9" >
@@ -315,7 +325,7 @@
                 </div>
                 <div class="result-data">
                     <el-card>
-                        <el-divider><strong><i class="el-icon-platform-eleme"></i>内容</strong></el-divider>
+                        <el-divider><strong><i class="el-icon-platform-eleme"></i>脚本输出</strong></el-divider>
                         <div class="format-code">
                             <pre><code>{{ content.join('') }}</code></pre>
                         </div>
@@ -344,12 +354,13 @@ export default {
             updateuuid:"",
             updateip:"",
             updatename: "",
+            ws: "",
             selectVal: [],
             runningNum: 0,
             finishedNum: 0,
             failedNum: 0,
             timer: "",
-            isJump: true,
+            isJump: false,
             isLoop: false,
             detailView: false,
             tableLoad2:true,
@@ -362,6 +373,7 @@ export default {
             content: [],
             curIp: "",
             curName: "",
+            curProject:"",
             resultVisible: false,
             processList: [
                 {pid:2, name: "docker更新", action: 1, value: "dockerUpdate", type: 1},
@@ -373,7 +385,9 @@ export default {
                 "docker更新": "dockerUpdate", 
                 "java更新": "javaUpdate", 
                 "重启docker": "javaUpdate", 
-                "重启java": "javaReload"
+                "重启java": "javaReload",
+                "docker更新Log": "dockerUpdateLog",
+                "java更新Log": "javaUpdateLog",
             },
             pages: {
                 curPage:1,
@@ -394,15 +408,13 @@ export default {
             'running': state => state.runningProcess.running,
         }),
     },
-    // watch: {
-    //     running(newVal, oldVal) {
-    //         store.commit("ADD_PROCESS", newVal);
-    //     }
-    // },
     methods: {
+        getRowKey(row) {
+            return row.id
+        },
         loopRunning() {
             this.timer = setInterval(() => {
-                this.getUpdateList(100, '');
+                this.getUpdateList("page", "");
             }, 3000)
         },
         async getProcessStatus() {
@@ -534,38 +546,40 @@ export default {
             this.tableLoad = false;
 
         },
-        // 获取更新列表数据
+        // 更新列表
         async getUpdateList(action, status) {
             let data = {};
             let check_status = "";
+            let pageNum = 1;
             if (status==="进行中") {
+                this.updatestatus = status;
                 check_status=400;
             } else if (status==="完成") {
+                this.updatestatus = status;
                 check_status=200;
             } else if (status==="失败") {
+                this.updatestatus = status;
                 check_status=300;
             }
             switch (action) {
-                case 100:
-                    data = {
-                        page: this.pages2.curPage,
-                        ip: this.updateip,
-                        uuid: this.updateuuid,
-                        update_name: this.updatename,
-                        // project: this.updateListSeach,
-                        // operator: this.updateListSeach,
-                        status: check_status,
-                    };
+                case "page":
+                    pageNum = this.pages2.curPage;
                     break
-                case 200:
-                    data = {
-                        page: this.pages2.curPage,
-                        status: check_status,
-                    };
-                    this.updatestatus = status;
+                case "search":
+                    pageNum = 1;
                     clearInterval(this.timer);
                     break
             }
+
+            data = {
+                page: pageNum,
+                ip: this.updateip,
+                uuid: this.updateuuid,
+                update_name: this.updatename,
+                // project: this.updateListSeach,
+                // operator: this.updateListSeach,
+                status: check_status,
+            };
             
             const resp = await getUpdateList(data).catch(()=>{this.tableLoad2 = false;})
             if (resp.data.code !== 10000) {
@@ -631,6 +645,15 @@ export default {
             }
             
         },
+        // 查看脚本执行的输出
+        viewContent (row) {
+            this.content = [];
+            this.resultVisible = true;
+            this.curIp = row.ip;
+            this.curName = row.update_name;
+            this.curProject = row.project;
+            this.singleContent(row);
+        },
         handleDelete (data) {},
         handleSelectionChange(val) {
             this.multipleSelection = val;
@@ -641,31 +664,31 @@ export default {
         },
         handleCurrentChange2(val) {
             this.pages2.curPage = val;
-            this.getUpdateList(100, this.updatestatus);
+            this.getUpdateList('page', this.updatestatus);
         },
-        singleContent(row, name) {
+        singleContent(val) {
             let data = {
-                    ip: row.ip,
-                    name: name,
-                    uuid: row.uuid
-                }
-            const ws = new WebSocket(this.wsUrl+"/assets/ws");
-            ws.onopen = () => {
+                ip: val.ip,
+                name: this.processName[val.update_name+"Log"],
+                uuid: val.uuid
+            }
+            this.ws = new WebSocket(wssUrl+"/assets/ws");
+            this.ws.onopen = () => {
                 console.log('WebSocket连接已打开');
-                ws.send(JSON.stringify(data));
+                this.ws.send(JSON.stringify(data));
             };
-            ws.onmessage = (event) => {
+            this.ws.onmessage = (event) => {
                 // console.log('收到消息:', event.data);
                 this.content.push(event.data);
                 let div = document.querySelector(".result-data");
                 div.scrollTop = div.scrollHeight - div.clientHeight;
             };
 
-            ws.onclose = () => {
+            this.ws.onclose = () => {
                 console.log('WebSocket连接已关闭');
             };
 
-            ws.onerror = (error) => {
+            this.ws.onerror = (error) => {
                 Message.error('WebSocket连接出错:', error);
             };
         },
@@ -674,7 +697,7 @@ export default {
     },
     mounted () {
         // this.loopRunning();
-        this.getUpdateList(100, '');
+        this.getUpdateList('page', '');
         this.getAssetsList();
     },
     filters: {
@@ -703,8 +726,9 @@ export default {
     padding: 20px;
     overflow-y: auto;
     height: 100%;
+    background-color: #f5f5f5;
 }
-.section-2, .section-1-2, .section-3, .table, .page, .result-data, .section-4, .section-5 {
+.section-2, .section-1-2, .section-3, .table, .page, .result-data, .section-5 {
     margin-top: 16px;
 }
 .search, .upload, .operate {

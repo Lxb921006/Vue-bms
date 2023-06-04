@@ -382,7 +382,8 @@ export default {
                     pageNum = this.pages.curPage;
                     break
                 case "search":
-                    pageNum = 1
+                    pageNum = 1;
+                    break
             }
             const resp = await getUserList(
                 {
