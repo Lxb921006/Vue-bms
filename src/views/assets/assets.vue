@@ -52,13 +52,19 @@
                         <el-upload
                             class="upload-demo"
                             ref="upload"
-                            action="https://jsonplaceholder.typicode.com/posts/"
+                            :action="uploadUrl()"
                             :on-preview="handlePreview"
                             :on-remove="handleRemove"
                             :limit="10"
+                            :on-success="handleSuccess"
+                            :on-change="handleChange"
+                            :on-error="handleError"
+                            :on-exceed="handleExceed"
+                            :file-list="fileList"
+                            multiple
                             :auto-upload="false">
                             <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-                            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">分发到指定服务器</el-button>
+                            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload2">分发到指定服务器</el-button>
                             <div slot="tip" class="el-upload__tip size">这里可以上传文件, 系统会批量的分发到勾选的服务器然后再点击对应按钮更新或重启</div>
                         </el-upload>
                     </el-row>
@@ -128,7 +134,7 @@
                             </el-row>
                             <el-row :gutter="10" class="detail-content">
                                 <el-col :span="4">
-                                   <label class="detail-2">点击更新程序是否在新的页面上打开:</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                                   <label class="detail-2">是否查看更新过程(默认关闭):</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
                                 </el-col>
                             </el-row>
                             <!-- <el-row :gutter="10" class="detail-content">
@@ -189,15 +195,15 @@
         </div>
         <div class="section-5">
             <el-card>
-                <el-divider><i class="el-icon-s-help"></i>更新列表</el-divider>
+                <el-divider><i class="el-icon-s-help"></i>更新记录列表</el-divider>
                 <div class="search">
                     <el-row :gutter=10>
                         <el-col :span=3.9>
                             <el-button-group>
                                 <!-- <el-button type="primary"  size="mini">全部</el-button> -->
-                                <el-button type="warning"  size="mini" @click="getUpdateList(200,'进行中')">进行中</el-button>
-                                <el-button type="success" size="mini" @click="getUpdateList(200,'完成')">完成</el-button>
-                                <el-button type="danger"  size="mini" @click="getUpdateList(200,'失败')">失败</el-button>
+                                <el-button type="warning"  size="mini" @click="getUpdateList('search','进行中')">进行中</el-button>
+                                <el-button type="success" size="mini" @click="getUpdateList('search','完成')">完成</el-button>
+                                <el-button type="danger"  size="mini" @click="getUpdateList('search','失败')">失败</el-button>
                             </el-button-group>
                         </el-col>
                         <!-- <el-col :span="3.9">
@@ -206,16 +212,22 @@
                             </el-input>
                         </el-col> -->
                         <el-col :span="3.9">
-                            <el-input v-model="updatestatus" placeholder="请输入更新状态" size="mini" clearable @keyup.enter.native="getUpdateList(100, '')" @clear="getUpdateList(100, updatestatus)"></el-input>
+                            <el-input v-model="updatestatus" placeholder="请输入更新状态" size="mini" clearable @keyup.enter.native="getUpdateList('search', updatestatus)" @clear="getUpdateList('search', updatestatus)"></el-input>
                         </el-col>
                         <el-col :span="3.9">
-                            <el-input v-model="updateip" placeholder="请输入ip" size="mini" clearable @keyup.enter.native="getUpdateList(100, '')" @clear="getUpdateList(100, updatestatus)"></el-input>
+                            <el-input v-model="updateip" placeholder="请输入ip" size="mini" clearable @keyup.enter.native="getUpdateList('search', updatestatus)" @clear="getUpdateList('search', updatestatus)"></el-input>
                         </el-col>
                         <el-col :span="3.9">
-                            <el-input v-model="updateuuid" placeholder="请输入uuid" size="mini" clearable @keyup.enter.native="getUpdateList(100, '')" @clear="getUpdateList(100, updatestatus)"></el-input>
+                            <el-input v-model="updateuuid" placeholder="请输入uuid" size="mini" clearable @keyup.enter.native="getUpdateList('search', updatestatus)" @clear="getUpdateList('search', updatestatus)"></el-input>
                         </el-col>
                         <el-col :span="3.9">
-                            <el-input v-model="updatename" placeholder="请输入更新程序" size="mini" clearable @keyup.enter.native="getUpdateList(100, '')" @clear="getUpdateList(100, updatestatus)"></el-input>
+                            <el-input v-model="updatename" placeholder="请输入更新程序" size="mini" clearable @keyup.enter.native="getUpdateList('search', updatestatus)" @clear="getUpdateList('search', updatestatus)"></el-input>
+                        </el-col>
+                        <el-col :span="3.9">
+                            <el-input v-model="updateuser" placeholder="请输入操作人" size="mini" clearable @keyup.enter.native="getUpdateList('search', updatestatus)" @clear="getUpdateList('search', updatestatus)"></el-input>
+                        </el-col>
+                        <el-col :span="3.9">
+                            <el-input v-model="updateproject" placeholder="请输入项目" size="mini" clearable @keyup.enter.native="getUpdateList('search', updatestatus)" @clear="getUpdateList('search', updatestatus)"></el-input>
                         </el-col>
                     </el-row>
                 </div>
@@ -231,14 +243,14 @@
                     <el-table-column prop="uuid" label="uuid" width="350"></el-table-column>
                     <el-table-column prop="update_name" label="更新程序" width="160">
                         <template slot-scope="scope">
-                            <el-tag effect="plain" size="mini" type="success">{{ scope.row.update_name }}</el-tag>
+                            <el-tag effect="plain" size="mini">{{ scope.row.update_name }}</el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="status" label="更新状态" width="160">
+                    <el-table-column prop="status" label="更新状态"  width="160">
                         <template slot-scope="scope">
-                            <el-button type="warning"  size="mini" v-if="scope.row.status === 400" :loading="true" plain>进行中</el-button>
-                                <el-button type="success" size="mini" v-else-if="scope.row.status === 200" plain>完成</el-button>
-                                <el-button type="danger"  size="mini" v-else-if="scope.row.status === 300" plain>失败</el-button>
+                            <el-button type="warning" size="mini"  v-if="scope.row.status === 400" :loading="true" plain>更新中</el-button>
+                            <el-link type="success" :underline="false"  size="mini" v-else-if="scope.row.status === 200" plain>完成</el-link>
+                            <el-link type="danger" :underline="false"  size="mini" v-else-if="scope.row.status === 300" plain>失败</el-link>
                         </template>
                     </el-table-column>
                     <el-table-column prop="progress" label="更新进度" width="250">
@@ -246,21 +258,8 @@
                             <el-progress :percentage="scope.row.progress"></el-progress>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="process" label="过程" width="250">
+                    <el-table-column prop="process" label="过程" width="200">
                         <template slot-scope="scope">
-                            <!-- <el-popover                
-                                placement="right"
-                                title="查看更新进度"
-                                width="230"
-                                trigger="click"
-                                >
-                                <el-divider></el-divider>
-                                <el-row :gutter="20" class="process-running-list">
-                                    <el-col :span="12">
-                                        <el-button type="warning"  size="mini" plain @click="viewContent2(scope.row, scope.row.update_name)">{{ scope.row.update_name }}</el-button>
-                                    </el-col>
-                                </el-row>
-                            </el-popover> -->
                             <el-link slot="reference" type="success" @click="viewContent(scope.row)">查看更新进度</el-link>
                         </template>
                     </el-table-column>
@@ -300,14 +299,14 @@
         </div>
         <div class="result">
             <el-dialog
-                title="查看"
+                title="脚本输出"
                 :visible.sync="resultVisible"
                 width="50%"
                 center
                 >
                 <div class="result-title">
                     <el-card>
-                        <el-divider><strong><i class="el-icon-platform-eleme"></i>操作</strong></el-divider>
+                        <el-divider><strong><i class="el-icon-platform-eleme"></i>更新内容</strong></el-divider>
                         <p class="op-name">
                             <el-row :gutter="10">
                                 <el-col :span="1.9" >
@@ -326,6 +325,9 @@
                 <div class="result-data">
                     <el-card>
                         <el-divider><strong><i class="el-icon-platform-eleme"></i>脚本输出</strong></el-divider>
+                        <div class="copy">
+                            <el-button type="success" size="mini" plain @click="copy(content.join(''))">复制</el-button>
+                        </div>
                         <div class="format-code">
                             <pre><code>{{ content.join('') }}</code></pre>
                         </div>
@@ -339,8 +341,9 @@
 <script>
 import { Message, MessageBox } from 'element-ui'
 import { mapState } from 'vuex'
-import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess, getUpdateList } from '../../api'
+import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess, getUpdateList, assetsUpload } from '../../api'
 import { v4 as uuidv4 } from 'uuid';
+import baseUrl from "../../utils/baseUrl";
 import wssUrl from "../../utils/wssUrl";
 import store from '../../store/index'
 
@@ -354,7 +357,10 @@ export default {
             updateuuid:"",
             updateip:"",
             updatename: "",
+            updateproject: "",
+            updateuser: "",
             ws: "",
+            fileList: [],
             selectVal: [],
             runningNum: 0,
             finishedNum: 0,
@@ -409,6 +415,13 @@ export default {
         }),
     },
     methods: {
+        copy(text) {
+            this.$copyText(text).then(() => {
+                Message.success("已复制");
+            }, () => {
+                Message.error('复制失败');
+            })
+        },
         getRowKey(row) {
             return row.id
         },
@@ -434,6 +447,9 @@ export default {
             this.failedNum = resp.data.data.failed;
 
         },
+        uploadUrl() {
+            return `${baseUrl}/assets/upload`
+        },
         submitUpload() {
             if (this.$refs.upload.uploadFiles.length === 0) {
                 return Message.error('请选取文件')
@@ -445,11 +461,57 @@ export default {
 
             this.$refs.upload.submit();
         },
+        async submitUpload2() {
+            if (this.$refs.upload.uploadFiles.length === 0) {
+                return Message.error('请选取文件')
+            }
+
+            if (this.multipleSelection.length === 0) {
+                return Message.error('请选勾选服务器')
+            }
+
+            let formData = new FormData();
+            this.fileList.forEach(file=>{
+                formData.append('file',file.raw);		
+            })
+
+            const resp = await assetsUpload(formData, this.callMethod);
+
+            this.fileList.forEach(file=>{
+                this.handleSuccess(resp, file);
+            })
+
+            if (resp.data.code === 10000) {
+                Message.success(resp.data.message);
+            } else {
+                Message.error(resp.data.message);
+            }
+        },
         handleRemove(file, fileList) {
             console.log(file, fileList);
         },
         handlePreview(file) {
             console.log(file);
+        },
+        handleSuccess(response, file) {
+            if (response.data.code === 10000) {
+                file.status = "success";
+            } else {
+                file.status = "error";
+            }
+        },
+        handleChange(file, fileList) {
+            this.fileList = fileList;
+            console.log(this.fileList);
+        },
+        beforeUpload(file) {
+            
+        },
+        handleExceed(files, fileList) {
+            Message.error("最多10个文件同时上传")
+        },
+        handleError(err) {
+            Message.error(err);
         },
         uniqueRandom () {
             const now = Date.now();
@@ -576,8 +638,8 @@ export default {
                 ip: this.updateip,
                 uuid: this.updateuuid,
                 update_name: this.updatename,
-                // project: this.updateListSeach,
-                // operator: this.updateListSeach,
+                project: this.updateproject,
+                operator: this.updateuser,
                 status: check_status,
             };
             
@@ -678,7 +740,6 @@ export default {
                 this.ws.send(JSON.stringify(data));
             };
             this.ws.onmessage = (event) => {
-                // console.log('收到消息:', event.data);
                 this.content.push(event.data);
                 let div = document.querySelector(".result-data");
                 div.scrollTop = div.scrollHeight - div.clientHeight;
@@ -780,6 +841,7 @@ export default {
 }
 .detail-2 {
     font-size: 14px;
+    color: #6e6e6e;
 }
 .upload {
     float: left;

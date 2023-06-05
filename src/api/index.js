@@ -11,6 +11,7 @@ export const updateUsers = (params, method) => post("/user/update?user="+ sessio
 export const removePerms = (params, method) => post("/role/rmperms?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const allotPerms = (params, method) => post("/role/allotperms?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const createRole = (params, method) => post("/role/create?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
+export const assetsUpload = (params, method) => post("/assets/upload?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const createProcessUpdateRecord = (params, method) => post("/assets/process/update/create?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const runningProcess = (params, method) => post("/assets/api?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const getUserList = (params) => get("/user/list?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params);

@@ -104,6 +104,10 @@ Vue.use(VueBus);
 
 Vue.use(VuePageTransition);
 
+//复制插件
+import VueClipboardPlus from 'vue-clipboard-plus';
+Vue.use(VueClipboardPlus);
+
 Vue.config.productionTip = false
 
 new Vue({
