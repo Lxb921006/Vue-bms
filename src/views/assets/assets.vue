@@ -786,7 +786,7 @@ export default {
     // padding: 15px;
     padding: 20px;
     overflow-y: auto;
-    height: 100%;
+    height: 96%;
     background-color: #f5f5f5;
 }
 .section-2, .section-1-2, .section-3, .table, .page, .result-data, .section-5 {
