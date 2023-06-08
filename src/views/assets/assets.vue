@@ -115,7 +115,7 @@
                             </el-select>
                         </el-col>
                         <el-col :span="3.9">
-                            <el-button type="primary"  size="mini" @click="runProcess('mul', '')">提交</el-button>
+                            <el-button type="primary" icon="el-icon-upload" size="mini" @click="runProcess('mul', '')">提交</el-button>
                         </el-col>
                         <el-col :span="3.9">
                             <el-button type="primary"  size="mini" icon="el-icon-circle-plus-outline" @click="runProcess('mul', '')">新建</el-button>
@@ -186,7 +186,7 @@
                     @current-change="handleCurrentChange"
                     :current-page.sync="pages.curPage"
                     :page-size="pages.pageSize"
-                    layout="prev, pager, next, total"
+                    layout="prev, pager, next, total, jumper"
                     :total="total"
                     >
                     </el-pagination>
@@ -201,9 +201,9 @@
                         <el-col :span=3.9>
                             <el-button-group>
                                 <!-- <el-button type="primary"  size="mini">全部</el-button> -->
-                                <el-button type="warning"  size="mini" @click="getUpdateList('search','进行中')">进行中</el-button>
-                                <el-button type="success" size="mini" @click="getUpdateList('search','完成')">完成</el-button>
-                                <el-button type="danger"  size="mini" @click="getUpdateList('search','失败')">失败</el-button>
+                                <el-button type="warning"  size="mini" @click="getUpdateList('search','进行中', 300)">进行中</el-button>
+                                <el-button type="success" size="mini" @click="getUpdateList('search','完成', 300)">完成</el-button>
+                                <el-button type="danger"  size="mini" @click="getUpdateList('search','失败', 300)">失败</el-button>
                             </el-button-group>
                         </el-col>
                         <!-- <el-col :span="3.9">
@@ -237,10 +237,10 @@
                 >
                     <el-table-column type="selection" width="55" :reserve-selection="true"></el-table-column>
                     <el-table-column prop="id" label="id"></el-table-column>
+                    <el-table-column prop="uuid" label="uuid" width="350"></el-table-column>
                     <el-table-column prop="project" label="项目"></el-table-column>
                     <el-table-column prop="ip" label="服务器" width="160"></el-table-column>
                     <el-table-column prop="operator" label="操作人" width="160"></el-table-column>
-                    <el-table-column prop="uuid" label="uuid" width="350"></el-table-column>
                     <el-table-column prop="update_name" label="更新程序" width="160">
                         <template slot-scope="scope">
                             <el-tag effect="plain" size="mini">{{ scope.row.update_name }}</el-tag>
@@ -255,7 +255,8 @@
                     </el-table-column>
                     <el-table-column prop="progress" label="更新进度" width="250">
                         <template slot-scope="scope">
-                            <el-progress :percentage="scope.row.progress"></el-progress>
+                            <el-progress :percentage="scope.row.progress" v-if="scope.row.status === 300" status="exception"></el-progress>
+                            <el-progress :percentage="scope.row.progress" v-else></el-progress>
                         </template>
                     </el-table-column>
                     <el-table-column prop="process" label="过程" width="200">
@@ -290,7 +291,7 @@
                     @current-change="handleCurrentChange2"
                     :current-page.sync="pages2.curPage"
                     :page-size="pages2.pageSize"
-                    layout="prev, pager, next, total"
+                    layout="prev, pager, next, total, jumper"
                     :total="total2"
                     >
                     </el-pagination>
@@ -343,6 +344,7 @@ import { Message, MessageBox } from 'element-ui'
 import { mapState } from 'vuex'
 import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess, getUpdateList, assetsUpload } from '../../api'
 import { v4 as uuidv4 } from 'uuid';
+import CryptoJS from 'crypto-js';
 import baseUrl from "../../utils/baseUrl";
 import wssUrl from "../../utils/wssUrl";
 import store from '../../store/index'
@@ -427,7 +429,7 @@ export default {
         },
         loopRunning() {
             this.timer = setInterval(() => {
-                this.getUpdateList("page", "");
+                this.getUpdateList("page", "", 200);
             }, 3000)
         },
         async getProcessStatus() {
@@ -472,7 +474,7 @@ export default {
 
             let formData = new FormData();
             this.fileList.forEach(file=>{
-                formData.append('file',file.raw);		
+                formData.append('file', file.raw);		
             })
 
             const resp = await assetsUpload(formData, this.callMethod);
@@ -504,9 +506,7 @@ export default {
             this.fileList = fileList;
             console.log(this.fileList);
         },
-        beforeUpload(file) {
-            
-        },
+        beforeUpload(file) {},
         handleExceed(files, fileList) {
             Message.error("最多10个文件同时上传")
         },
@@ -609,10 +609,15 @@ export default {
 
         },
         // 更新列表
-        async getUpdateList(action, status) {
+        async getUpdateList(action, status, cancel) {
             let data = {};
             let check_status = "";
             let pageNum = 1;
+
+            if (cancel===300) {
+                clearInterval(this.timer);
+            }
+
             if (status==="进行中") {
                 this.updatestatus = status;
                 check_status=400;
@@ -629,7 +634,6 @@ export default {
                     break
                 case "search":
                     pageNum = 1;
-                    clearInterval(this.timer);
                     break
             }
 
@@ -675,7 +679,7 @@ export default {
             }, this.callMethod);
             return resp
         },
-        // 是否在新的页面打开程序更新
+        // 是否需要在新的页面打开，实时查看更新脚本的输出内容
         async runningJumpOrNot(row, name) {
             let data = {};
             this.curIp = row.ip;
@@ -724,9 +728,13 @@ export default {
             this.pages.curPage = val;
             this.getAssetsList("page");
         },
+        handleSizeChange2(val) {
+            this.pages2.curPage = val;
+            this.getUpdateList('page', this.updatestatus, 200);
+        },
         handleCurrentChange2(val) {
             this.pages2.curPage = val;
-            this.getUpdateList('page', this.updatestatus);
+            this.getUpdateList('page', this.updatestatus, 200);
         },
         singleContent(val) {
             let data = {
@@ -758,8 +766,10 @@ export default {
     },
     mounted () {
         // this.loopRunning();
-        this.getUpdateList('page', '');
+        this.getUpdateList('page', '', 200);
         this.getAssetsList();
+        const hash = CryptoJS.MD5("fileData");
+        console.log(hash.toString());
     },
     filters: {
         formatDate(date) {
