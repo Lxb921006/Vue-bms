@@ -4,6 +4,7 @@ const permsList = () => import('../views/perms/perms');
 const roleList = () => import('../views/roles/roles');
 const logList = () => import('../views/operate/operate');
 const layOut = () => import('../layout/layout');
+const assetsList = () => import('../views/assets/assets')
 
 const dynamicRoutes = [
   {
@@ -152,7 +153,62 @@ const dynamicRoutes = [
       meta: { title: ['日志管理', '日志列表'], name: '日志列表',  icon: 'el-icon-menu', keepAlive: true },
       },
     ],
-  }
+  },
+  {
+    path: '/assets',
+    name: 'assetsManage',
+    redirect: 'list',
+    hidden: false,
+    component: layOut,
+    meta: {name:'用户管理', icon: 'el-icon-s-custom'},
+    children: [
+    {
+      path:'/assets/list',
+      name: 'assetsList',
+      hidden: false,
+      component: usersList,
+      meta: { title: ['服务器管理', '服务器列表'], name: '服务器列表',  icon: 'el-icon-menu', keepAlive: true },
+      children: [
+          {
+            path:'/assets/add',
+            name: 'assetsAdd',
+            meta: { name: '服务器添加'},
+            hidden: false, //按钮级别的权限隐藏,false：不隐藏，true：隐藏
+          },
+          {
+            path:'/assets/del',
+            name: 'assetsDel',
+            meta: { name: '服务器删除'},
+            hidden: false,
+          },
+          {
+            path:'/assets/update',
+            name: 'assetsUpdate',
+            meta: { name: '服务器更新'},
+            hidden: false,
+          },
+          {
+            path:'/assets/process/update/list',
+            name: 'assetsUpdate',
+            meta: { name: '更新列表'},
+            hidden: false,
+          },
+          {
+            path:'/assets/api',
+            name: 'processUpdate',
+            meta: { name: '更新程序1'},
+            hidden: false,
+          },
+          {
+            path:'/assets/upload',
+            name: 'uploadFile',
+            meta: { name: '上传文件'},
+            hidden: false,
+          },
+        ],
+      },
+    ],
+  },
 ]
 
 export default dynamicRoutes
