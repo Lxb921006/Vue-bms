@@ -160,13 +160,13 @@ const dynamicRoutes = [
     redirect: 'list',
     hidden: false,
     component: layOut,
-    meta: {name:'用户管理', icon: 'el-icon-s-custom'},
+    meta: { name: '服务器管理', icon: 'el-icon-bangzhu'},
     children: [
     {
       path:'/assets/list',
       name: 'assetsList',
       hidden: false,
-      component: usersList,
+        component: assetsList,
       meta: { title: ['服务器管理', '服务器列表'], name: '服务器列表',  icon: 'el-icon-menu', keepAlive: true },
       children: [
           {
@@ -193,6 +193,12 @@ const dynamicRoutes = [
             meta: { name: '更新列表'},
             hidden: false,
           },
+        {
+          path: '/assets/process/update/create',
+          name: 'assetsUpdate',
+          meta: { name: '更新记录' },
+          hidden: false,
+        },
           {
             path:'/assets/api',
             name: 'processUpdate',

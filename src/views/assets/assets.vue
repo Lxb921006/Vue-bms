@@ -44,7 +44,7 @@
                 </div>
             </el-card>
         </div> -->
-        <div class="section-4">
+        <div class="section-4" v-if="isHidden('/assets/upload', permissionList)">
             <el-card>
                 <el-divider><i class="el-icon-upload"></i>上传文件</el-divider>
                 <div class="upload">
@@ -71,7 +71,7 @@
                 </div>
             </el-card>
         </div>
-        <div class="section-2">
+        <div class="section-2" v-if="isHidden('/assets/api', permissionList)">
             <el-card>
                 <el-divider><i class="el-icon-s-tools"></i>操作</el-divider>
                 <div class="operate">
@@ -115,10 +115,10 @@
                             </el-select>
                         </el-col>
                         <el-col :span="3.9">
-                            <el-button type="primary" icon="el-icon-upload" size="mini" @click="runProcess('mul', '')">提交</el-button>
+                            <el-button type="primary" icon="el-icon-upload" size="mini" @click="runProcess('mul', '')" v-if="isHidden('/assets/api', permissionList)">提交</el-button>
                         </el-col>
                         <el-col :span="3.9">
-                            <el-button type="primary"  size="mini" icon="el-icon-circle-plus-outline" @click="runProcess('mul', '')">新建</el-button>
+                            <el-button type="primary"  size="mini" icon="el-icon-circle-plus-outline" @click="runProcess('mul', '')" v-if="isHidden('/assets/add', permissionList)">新建</el-button>
                         </el-col>
                         <el-col :span="2" class="c1">
                             <el-link type="primary" @click="oc">{{ detailContent }}<i :class="detailICon"></i> </el-link>
@@ -166,14 +166,14 @@
                     </el-table-column>
                     <el-table-column prop="operate" label="操作" width="250">
                         <template slot-scope="scope">
-                            <el-button size="mini" icon="el-icon-edit">编辑</el-button>
+                            <el-button size="mini" icon="el-icon-edit" v-if="isHidden('/assets/update', permissionList)">编辑</el-button>
                             <el-popconfirm :title="'确定删除'+scope.row.ip+'吗?'"
                                 icon="el-icon-info"
                                 icon-color="red"
                                 confirm-button-text='删除'
                                 @confirm="handleDelete(scope.row)"
                             >
-                                <el-button size="mini" type="danger" slot="reference" icon="el-icon-delete-solid" plain>删除</el-button>
+                                <el-button size="mini" type="danger" slot="reference" icon="el-icon-delete-solid" plain v-if="isHidden('/assets/del', permissionList)">删除</el-button>
                             </el-popconfirm>
                         </template>
                     </el-table-column>
@@ -193,7 +193,7 @@
                 </div>
             </el-card>
         </div>
-        <div class="section-5">
+        <div class="section-5" v-if="isHidden('/assets/process/update/list', permissionList)">
             <el-card>
                 <el-divider><i class="el-icon-s-help"></i>更新记录列表</el-divider>
                 <div class="search">
@@ -414,6 +414,7 @@ export default {
     computed: {
         ...mapState({
             'running': state => state.runningProcess.running,
+            'permissionList': state => state.addRouters.permissionList,
         }),
     },
     methods: {
@@ -699,7 +700,7 @@ export default {
             // 在新的页面执行
             if (this.isJump) {
                 let routeData = this.$router.resolve(
-                    { path: `/assets/update/${row.ip}/${this.processName[name]}/${row.uuid}` }
+                    { path: `/assets/update/${row.project}/${row.ip}/${this.processName[name]}/${row.uuid}` }
                 );
                 window.open(routeData.href, '_blank');
             } else {
@@ -762,7 +763,21 @@ export default {
             };
         },
         callMethod() {},
-
+        isHidden(path, routers=[]) {
+            if (routers !== null){
+                for (var i=0; i<routers.length; i++) {
+                if (routers[i].path === path) {
+                    return  routers[i].hidden;
+                }
+                if (routers[i].children != undefined && routers[i].children.length > 0) {
+                    let hidden = this.isHidden(path, routers[i].children);
+                    if (hidden) {
+                        return  hidden
+                    }
+                }
+                }
+            }
+        },
     },
     mounted () {
         // this.loopRunning();
@@ -794,10 +809,10 @@ export default {
 <style lang="scss" scoped>
 .box {
     // padding: 15px;
-    padding: 20px;
+    // padding: 20px;
     overflow-y: auto;
     height: 96%;
-    background-color: #f5f5f5;
+    // background-color: #f5f5f5;
 }
 .section-2, .section-1-2, .section-3, .table, .page, .result-data, .section-5 {
     margin-top: 16px;

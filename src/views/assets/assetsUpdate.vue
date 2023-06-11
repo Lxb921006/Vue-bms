@@ -7,6 +7,9 @@
                         <p class="op-name">
                             <el-row :gutter="10">
                                 <el-col :span="1.9" >
+                                    <el-tag effect="plain"  type="success">{{ project }}</el-tag>
+                                </el-col>
+                                <el-col :span="1.9" >
                                     <el-tag effect="plain"  type="success">{{ ip }}</el-tag>
                                 </el-col>
                                 <el-col :span="1.9" >
@@ -43,8 +46,10 @@ export default {
             updateLoading: true,
             curName: "",
             content: [],
-            uuid: "",    
-            id: "",    
+            uuid: "",
+            project:"",    
+            ip: "",    
+            socket:"",
         }
     },
     methods: {
@@ -54,6 +59,7 @@ export default {
             } else {
                 // 实例化socket
                 this.wsUrl = wssUrl;
+                // this.socket = new WebSocket(this.wsUrl+"/assets/ws?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"));
                 this.socket = new WebSocket(this.wsUrl+"/assets/ws");
                 // 监听socket连接
                 this.socket.onopen = this.open;
@@ -104,6 +110,7 @@ export default {
         this.curName = this.$route.params.name;
         this.ip =  this.$route.params.ip;
         this.uuid = this.$route.params.uuid;
+        this.project = this.$route.params.project;
         this.wsInit();
     },
     

@@ -17,14 +17,14 @@ const routes = [
     meta: { name: '谷歌认证登录' },
     component: () => import('../views/login/ga')
   },
+  // {
+  //   path: '/assets',
+  //   name: 'assets',
+  //   meta: { name: '资产管理' },
+  //   component: () => import('../views/assets/assets')
+  // },
   {
-    path: '/assets',
-    name: 'assets',
-    meta: { name: '资产管理' },
-    component: () => import('../views/assets/assets')
-  },
-  {
-    path: '/assets/update/:ip/:name/:uuid',
+    path: '/assets/update/:project/:ip/:name/:uuid',
     // path: '/ga',
     name: 'assets-update',
     meta: { name: '查看更新' },
