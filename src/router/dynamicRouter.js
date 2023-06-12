@@ -193,12 +193,12 @@ const dynamicRoutes = [
             meta: { name: '更新列表'},
             hidden: false,
           },
-        {
-          path: '/assets/process/update/create',
-          name: 'assetsUpdate',
-          meta: { name: '更新记录' },
-          hidden: false,
-        },
+          {
+            path: '/assets/process/update/create',
+            name: 'assetsUpdate',
+            meta: { name: '更新记录' },
+            hidden: false,
+          },
           {
             path:'/assets/api',
             name: 'processUpdate',
@@ -209,6 +209,12 @@ const dynamicRoutes = [
             path:'/assets/upload',
             name: 'uploadFile',
             meta: { name: '上传文件'},
+            hidden: false,
+          },
+          {
+            path:'/assets/ws',
+            name: 'assetsWs',
+            meta: { name: 'websocket连接'},
             hidden: false,
           },
         ],

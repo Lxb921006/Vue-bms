@@ -59,8 +59,7 @@ export default {
             } else {
                 // 实例化socket
                 this.wsUrl = wssUrl;
-                // this.socket = new WebSocket(this.wsUrl+"/assets/ws?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"));
-                this.socket = new WebSocket(this.wsUrl+"/assets/ws");
+                this.socket = new WebSocket(this.wsUrl+"/assets/ws?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"));
                 // 监听socket连接
                 this.socket.onopen = this.open;
                 // 监听socket错误信息

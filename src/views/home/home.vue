@@ -1,7 +1,7 @@
 <template>
     <div class="box">
         <el-container class="home" v-loading="permsLoad">
-            <el-aside :width="isCollapse ? '65px' : '200px'">
+            <el-aside >
                 <el-menu
                     :default-active="editableTabsValue"
                     class="el-menu-vertical-demo"
@@ -9,7 +9,7 @@
                     @close="handleClose"
                     :router="true"
                     :collapse="isCollapse"
-                    :collapse-transition="false"
+                    :collapse-transition="true"
                     background-color="#304156"
                     text-color="rgb(191, 203, 217)"
                     active-text-color="#ffd04b">
@@ -107,7 +107,7 @@ export default {
     name:"home",
     data () {
         return {
-            isCollapse: false,
+            isCollapse: true,
             userCenterDialogVisible: false,
             pwdDialogVisible: false,
             editableTabs: [],
@@ -258,6 +258,7 @@ text-align: left;
   text-align: left;
   overflow-y: auto;
   overflow-x: hidden;
+  width: auto!important;
 }
 
 .el-main {

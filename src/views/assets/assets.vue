@@ -118,7 +118,7 @@
                             <el-button type="primary" icon="el-icon-upload" size="mini" @click="runProcess('mul', '')" v-if="isHidden('/assets/api', permissionList)">提交</el-button>
                         </el-col>
                         <el-col :span="3.9">
-                            <el-button type="primary"  size="mini" icon="el-icon-circle-plus-outline" @click="runProcess('mul', '')" v-if="isHidden('/assets/add', permissionList)">新建</el-button>
+                            <el-button type="primary"  size="mini" icon="el-icon-circle-plus-outline" @click="openCreateDialog()" v-if="isHidden('/assets/add', permissionList)">新建</el-button>
                         </el-col>
                         <el-col :span="2" class="c1">
                             <el-link type="primary" @click="oc">{{ detailContent }}<i :class="detailICon"></i> </el-link>
@@ -206,11 +206,6 @@
                                 <el-button type="danger"  size="mini" @click="getUpdateList('search','失败', 300)">失败</el-button>
                             </el-button-group>
                         </el-col>
-                        <!-- <el-col :span="3.9">
-                            <el-input v-model="updateListSeach" placeholder="请输入" size="mini" clearable @clear="getUpdateList(100, '')">
-                                <el-button slot="append" icon="el-icon-search" size="mini" @click="getUpdateList(100, '')"></el-button>
-                            </el-input>
-                        </el-col> -->
                         <el-col :span="3.9">
                             <el-input v-model="updatestatus" placeholder="请输入更新状态" size="mini" clearable @keyup.enter.native="getUpdateList('search', updatestatus)" @clear="getUpdateList('search', updatestatus)"></el-input>
                         </el-col>
@@ -298,6 +293,35 @@
                 </div>
             </el-card>
         </div>
+        <div class="create">
+            <el-dialog
+                title="添加服务器"
+                :visible.sync="createVisible"
+                center
+                width="400" 
+                
+                >
+                <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm ">
+                    <el-form-item label="项目名" prop="project">
+                        <el-input  type="text" v-model="ruleForm.project" autocomplete="off" clearable></el-input>
+                    </el-form-item>
+                    <el-form-item label="ip" prop="ip">
+                        <el-input type="textarea" :rows="10" v-model="ruleForm.ip" autocomplete="off" placeholder="批量添加ip, 请换行输入" clearable></el-input>
+                    </el-form-item>
+                </el-form>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="resetForm('ruleForm')">重置</el-button>
+                    <el-popconfirm :title="'确定添加吗?'"
+                                    icon="el-icon-info"
+                                    icon-color="red"
+                                    confirm-button-text='确定'
+                                    @confirm="submitForm('ruleForm', createServer)"
+                                >
+                        <el-button type="primary" :loading="createLoad" slot="reference">确 定</el-button>
+                    </el-popconfirm>
+                </span>
+            </el-dialog>
+        </div>
         <div class="result">
             <el-dialog
                 title="脚本输出"
@@ -324,7 +348,9 @@
                     </el-card>
                 </div>
                 <div class="result-data">
-                    <el-card>
+                    <el-card v-loading="logLoading"
+                            element-loading-text="正在拼命连接中..."
+                            element-loading-spinner="el-icon-loading">
                         <el-divider><strong><i class="el-icon-platform-eleme"></i>脚本输出</strong></el-divider>
                         <div class="copy">
                             <el-button type="success" size="mini" plain @click="copy(content.join(''))">复制</el-button>
@@ -347,11 +373,26 @@ import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 import baseUrl from "../../utils/baseUrl";
 import wssUrl from "../../utils/wssUrl";
-import store from '../../store/index'
+import VueDraggableResizable from 'vue-draggable-resizable'
+import 'vue-draggable-resizable/dist/VueDraggableResizable.css';
 
 export default {
     name: "assets",
     data () {
+        var validateproject = (rule, value, callback) => {
+            if (!value) {
+                callback(new Error('请输入项目'));
+            } else {
+                callback();
+            }
+        };
+        var validateip = (rule, value, callback) => {
+            if (!value) {
+                callback(new Error('请输入ip'));
+            } else {
+                callback();
+            }
+        };
         return {
             searchData: "",
             updateListSeach: "",
@@ -362,27 +403,47 @@ export default {
             updateproject: "",
             updateuser: "",
             ws: "",
-            fileList: [],
-            selectVal: [],
+            curIp: "",
+            curName: "",
+            curProject:"",
             runningNum: 0,
             finishedNum: 0,
             failedNum: 0,
+            total:5,
+            total2:5,
             timer: "",
             isJump: false,
             isLoop: false,
             detailView: false,
+            createVisible: false,
+            resultVisible: false,
+            createLoad:false,
             tableLoad2:true,
-            updateRunning: [],
+            tableLoad: true,
+            logLoading: true,
             detailContent: "更新设置",
             detailICon: "el-icon-arrow-down",
-            tableLoad: true,
-            total:5,
-            total2:5,
+            updateRunning: [],
+            fileList: [],
+            selectVal: [],
             content: [],
-            curIp: "",
-            curName: "",
-            curProject:"",
-            resultVisible: false,
+            projectList: [],
+            finished: [],
+            multipleSelection: [],
+            dataList: [],
+            dataList2: [],
+            ruleForm: {
+                project:'',
+                ip:'',
+            },
+            rules: {
+                project: [
+                        { validator: validateproject, trigger: 'blur' }
+                    ],
+                ip: [
+                    { validator: validateip, trigger: 'blur' }
+                ],
+            },
             processList: [
                 {pid:2, name: "docker更新", action: 1, value: "dockerUpdate", type: 1},
                 {pid:4, name: "java更新", action: 2, value: "javaUpdate", type: 1},
@@ -405,10 +466,7 @@ export default {
                 curPage:1,
                 pageSize:5,
             },
-            finished: [],
-            multipleSelection: [],
-            dataList: [],
-            dataList2: [],
+            
         }
     },
     computed: {
@@ -417,7 +475,29 @@ export default {
             'permissionList': state => state.addRouters.permissionList,
         }),
     },
+    components: {
+        // VueDraggableResizable
+    },
     methods: {
+        resetForm(formName) {
+            this.$refs[formName].resetFields();
+        },
+        submitForm(formName, method) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    method.call();
+                } else {
+                    return false;
+                }
+            });
+        },
+        delServer() {},
+        openCreateDialog() {
+            this.createVisible = true;
+        },
+        createServer() {
+            this.createLoad = true;
+        },
         copy(text) {
             this.$copyText(text).then(() => {
                 Message.success("已复制");
@@ -427,11 +507,6 @@ export default {
         },
         getRowKey(row) {
             return row.id
-        },
-        loopRunning() {
-            this.timer = setInterval(() => {
-                this.getUpdateList("page", "", 200);
-            }, 3000)
         },
         async getProcessStatus() {
             const resp = await getProcessStatus({result: "run"}).catch(()=>{
@@ -609,13 +684,19 @@ export default {
             this.tableLoad = false;
 
         },
+        // 实时获取更新状态
+        loopRunning() {
+            this.timer = setInterval(() => {
+                this.getUpdateList("page", "", 200);
+            }, 3000)
+        },
         // 更新列表
         async getUpdateList(action, status, cancel) {
             let data = {};
             let check_status = "";
             let pageNum = 1;
 
-            if (cancel===300) {
+            if (cancel==300) {
                 clearInterval(this.timer);
             }
 
@@ -738,13 +819,15 @@ export default {
             this.getUpdateList('page', this.updatestatus, 200);
         },
         singleContent(val) {
+            this.logLoading = true;
             let data = {
                 ip: val.ip,
                 name: this.processName[val.update_name+"Log"],
                 uuid: val.uuid
             }
-            this.ws = new WebSocket(wssUrl+"/assets/ws");
+            this.ws = new WebSocket(wssUrl+"/assets/ws?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"));
             this.ws.onopen = () => {
+                this.logLoading = false;
                 console.log('WebSocket连接已打开');
                 this.ws.send(JSON.stringify(data));
             };
@@ -753,12 +836,11 @@ export default {
                 let div = document.querySelector(".result-data");
                 div.scrollTop = div.scrollHeight - div.clientHeight;
             };
-
             this.ws.onclose = () => {
                 console.log('WebSocket连接已关闭');
             };
-
             this.ws.onerror = (error) => {
+                this.logLoading = false;
                 Message.error('WebSocket连接出错:', error);
             };
         },
@@ -807,6 +889,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.vue-draggable-resizable__wrap:focus,
+.vue-draggable-resizable__wrap:focus-within {
+  outline: none;
+}
 .box {
     // padding: 15px;
     // padding: 20px;
@@ -878,6 +964,16 @@ export default {
 }
 .upload-demo {
     text-align: left;
+}
+.el-popover__reference-wrapper button  {
+    margin-left: 20px;
+}
+:deep .el-dialog__body {
+    // height: 50px !important;
+    background-color: #f9f9f9;
+}
+:deep .el-dialog--center .el-dialog__footer {
+    background-color: #f9f9f9;
 }
 .result-data {
     overflow-y: auto;
