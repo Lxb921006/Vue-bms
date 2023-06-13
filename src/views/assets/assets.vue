@@ -129,7 +129,7 @@
                 <div class="table">
                     <transition name="el-zoom-in-center">
                         <div class="detail" v-show="detailView">
-                            <el-row :gutter="10">
+                            <el-row :gutter="5">
                                 <h3 class="title-2">更新设置</h3>
                             </el-row>
                             <el-row :gutter="10" class="detail-content">
@@ -137,16 +137,11 @@
                                    <label class="detail-2">是否查看更新过程(默认关闭):</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
                                 </el-col>
                             </el-row>
-                            <!-- <el-row :gutter="10" class="detail-content">
-                                <el-col :span="1.9">
-                                   <label class="detail-2">是否打开更新日志:</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                            <el-row :gutter="10" class="detail-content">
+                                <el-col :span="4">
+                                   <label class="detail-2">是否删除更新记录:</label> <el-switch v-model="isDelUpdateLog" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
                                 </el-col>
                             </el-row>
-                            <el-row :gutter="10" class="detail-content">
-                                <el-col :span="1.9">
-                                   <label class="detail-2">是否删除更新日志:</label> <el-switch v-model="isJump" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
-                                </el-col>
-                            </el-row> -->
                         </div>
                     </transition>
                     
@@ -298,10 +293,10 @@
                 title="添加服务器"
                 :visible.sync="createVisible"
                 center
-                width="400" 
+                width="600px" 
                 
                 >
-                <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm ">
+                <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm fix-form-css">
                     <el-form-item label="项目名" prop="project">
                         <el-input  type="text" v-model="ruleForm.project" autocomplete="off" clearable></el-input>
                     </el-form-item>
@@ -368,7 +363,7 @@
 <script>
 import { Message, MessageBox } from 'element-ui'
 import { mapState } from 'vuex'
-import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess, getUpdateList, assetsUpload } from '../../api'
+import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess, getUpdateList, assetsUpload, createServer, delServer } from '../../api'
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 import baseUrl from "../../utils/baseUrl";
@@ -412,6 +407,7 @@ export default {
             total:5,
             total2:5,
             timer: "",
+            isDelUpdateLog: false,
             isJump: false,
             isLoop: false,
             detailView: false,
@@ -491,12 +487,56 @@ export default {
                 }
             });
         },
-        delServer() {},
+        async delServer(action, row) {
+            let data = "";
+            switch (action) {
+                case 'multi':
+                    if (this.multipleSelection.length == 0) {
+                        return Message.error("请勾选需要删除的服务器");
+                    }
+                    data = JSON.stringify({ip: this.multipleSelection.map(item => item.ip)});
+                    break
+                case 'sig':
+                    let dl  = [];
+                    dl.push(row.ip)
+                    data = JSON.stringify({ips: dl});
+                    break
+            }
+
+            const resp = await delServer(data, this.callMethod)
+            if (resp.data.code !== 10000) {
+                Message.error(resp.data.message)
+            } else {
+                this.getAssetsList();
+                Message.success(resp.data.message)
+            }
+        },
+        async createServer() {
+            this.createLoad = true;
+            let data = [];
+            const regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            data = this.ruleForm.ip.split("\n").filter(ip => {
+                return regex.test(ip);
+            });
+
+            if (data.length===0) {
+                return Message.error("格式错误, 只接收ip格式参数")
+            }
+
+            let params = JSON.stringify({project: this.ruleForm.project, ip: data});
+
+            const resp = await createServer(params, this.callMethod);
+            if (resp.data.code !== 10000) {
+                Message.error(resp.data.message)
+            } else {
+                this.getAssetsList();
+                Message.success(resp.data.message)
+            }
+
+            this.createLoad = false;
+        },
         openCreateDialog() {
             this.createVisible = true;
-        },
-        createServer() {
-            this.createLoad = true;
         },
         copy(text) {
             this.$copyText(text).then(() => {
@@ -802,7 +842,9 @@ export default {
             this.curProject = row.project;
             this.singleContent(row);
         },
-        handleDelete (data) {},
+        handleDelete (data) {
+            this.delServer('sig', data);
+        },
         handleSelectionChange(val) {
             this.multipleSelection = val;
         },
@@ -862,7 +904,6 @@ export default {
         },
     },
     mounted () {
-        // this.loopRunning();
         this.getUpdateList('page', '', 200);
         this.getAssetsList();
         const hash = CryptoJS.MD5("fileData");
@@ -889,10 +930,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.vue-draggable-resizable__wrap:focus,
-.vue-draggable-resizable__wrap:focus-within {
-  outline: none;
-}
 .box {
     // padding: 15px;
     // padding: 20px;
@@ -968,6 +1005,14 @@ export default {
 .el-popover__reference-wrapper button  {
     margin-left: 20px;
 }
+.fix-form-css {
+    margin-right: 68px;
+}
+:deep .el-form-item .el-form-item--feedback {
+    width: 500px;
+    margin: 22px auto;
+}
+
 :deep .el-dialog__body {
     // height: 50px !important;
     background-color: #f9f9f9;
