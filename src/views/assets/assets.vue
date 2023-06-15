@@ -1,49 +1,5 @@
 <template>
     <div class="box">
-        <!-- <div class="section-1">
-            <el-card>
-                <div class="process-info">
-                    <el-row :gutter="20">
-                        <el-col :span="6">
-                            <div>
-                                <el-statistic title="进行中的任务">
-                                    <template slot="formatter"> {{ runningNum }} </template>
-                                </el-statistic>
-                            </div>
-                        </el-col>
-                        <el-col :span="6">
-                            <div>
-                                <el-statistic title="已完成的任务">
-                                    <template slot="formatter"> {{ finishedNum }} </template>
-                                </el-statistic>
-                            </div>
-                        </el-col>
-                        <el-col :span="6">
-                            <div>
-                                <el-statistic title="失败的任务">
-                                    <template slot="formatter"> {{ failedNum }} </template>
-                                </el-statistic>
-                            </div>
-                        </el-col>
-                    </el-row>
-                </div>
-            </el-card>
-        </div> -->
-        <!-- <div class="section-1-2">
-            <el-card>
-                <div class="operate">
-                    <el-row :gutter="10">
-                        <template v-for="data in processList">
-                            <template>
-                                <el-col :span="1.9" :key="data.pid">
-                                    <el-button v-if="data.action==2" type="warning" size="mini" icon="el-icon-basketball" @click="runProcess('sin', data.name)">{{ data.name }}</el-button>
-                                </el-col>
-                            </template>
-                        </template>
-                    </el-row>
-                </div>
-            </el-card>
-        </div> -->
         <div class="section-4" v-if="isHidden('/assets/upload', permissionList)">
             <el-card>
                 <el-divider><i class="el-icon-upload"></i>上传文件</el-divider>
@@ -76,11 +32,11 @@
                 <el-divider><i class="el-icon-s-tools"></i>操作</el-divider>
                 <div class="operate">
                     <el-row :gutter="10">
-                        <template v-for="data in processList">
+                        <template v-for="(data, index) in processList">
                             <template>
                                 <el-col :span="1.9" :key="data.pid">
-                                    <el-button v-if="data.type==1" type="primary" size="mini" icon="el-icon-basketball" @click="runProcess('sin', data.name)">{{ data.name }}</el-button>
-                                    <el-button v-else-if="data.type==2" type="warning" size="mini" icon="el-icon-basketball" @click="runProcess('sin', data.name)">{{ data.name }}</el-button>
+                                    <el-button v-if="data.type==1" type="primary" size="mini" icon="el-icon-basketball" @click="runProcess('sin', data.name, index)" :loading="data.load">{{ data.name }}</el-button>
+                                    <el-button v-else-if="data.type==2" type="warning" size="mini" icon="el-icon-basketball" @click="runProcess('sin', data.name, index)" :loading="data.load">{{ data.name }}</el-button>
                                 </el-col>
                             </template>
                         </template>
@@ -115,7 +71,7 @@
                             </el-select>
                         </el-col>
                         <el-col :span="3.9">
-                            <el-button type="primary" icon="el-icon-upload" size="mini" @click="runProcess('mul', '')" v-if="isHidden('/assets/api', permissionList)">提交</el-button>
+                            <el-button type="primary" icon="el-icon-upload" size="mini" @click="runProcess('mul', '')" v-if="isHidden('/assets/api', permissionList)" :loading="submitLoading">提交</el-button>
                         </el-col>
                         <el-col :span="3.9">
                             <el-button type="primary"  size="mini" icon="el-icon-circle-plus-outline" @click="openCreateDialog()" v-if="isHidden('/assets/add', permissionList)">新建</el-button>
@@ -139,7 +95,7 @@
                             </el-row>
                             <el-row :gutter="10" class="detail-content">
                                 <el-col :span="4">
-                                   <label class="detail-2">是否删除更新记录:</label> <el-switch v-model="isDelUpdateLog" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                                   <label class="detail-2">是否删除更新记录(默认不删除):</label> <el-switch v-model="isDelUpdateLog" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
                                 </el-col>
                             </el-row>
                         </div>
@@ -196,7 +152,7 @@
                         <el-col :span=3.9>
                             <el-button-group>
                                 <!-- <el-button type="primary"  size="mini">全部</el-button> -->
-                                <el-button type="warning"  size="mini" @click="getUpdateList('search','进行中', 300)">进行中</el-button>
+                                <el-button type="warning"  size="mini" @click="getUpdateList('search','更新中', 300)">更新中</el-button>
                                 <el-button type="success" size="mini" @click="getUpdateList('search','完成', 300)">完成</el-button>
                                 <el-button type="danger"  size="mini" @click="getUpdateList('search','失败', 300)">失败</el-button>
                             </el-button-group>
@@ -407,7 +363,9 @@ export default {
             total:5,
             total2:5,
             timer: "",
+            nowLoading: false,
             isDelUpdateLog: false,
+            submitLoading: false,
             isJump: false,
             isLoop: false,
             detailView: false,
@@ -428,6 +386,7 @@ export default {
             multipleSelection: [],
             dataList: [],
             dataList2: [],
+            uploadData: {},
             ruleForm: {
                 project:'',
                 ip:'',
@@ -441,10 +400,10 @@ export default {
                 ],
             },
             processList: [
-                {pid:2, name: "docker更新", action: 1, value: "dockerUpdate", type: 1},
-                {pid:4, name: "java更新", action: 2, value: "javaUpdate", type: 1},
-                {pid:5, name: "重启docker", action: 3, value: "dockerReload", type: 2},
-                {pid:6, name: "重启java", action: 4, value: "javaReload", type: 2},
+                {pid:2, name: "docker更新", action: 1, value: "dockerUpdate", type: 1, load: false,},
+                {pid:4, name: "java更新", action: 2, value: "javaUpdate", type: 1, load: false,},
+                {pid:5, name: "重启docker", action: 3, value: "dockerReload", type: 2, load: false,},
+                {pid:6, name: "重启java", action: 4, value: "javaReload", type: 2, load: false,},
             ],
             processName: {
                 "docker更新": "dockerUpdate", 
@@ -475,6 +434,9 @@ export default {
         // VueDraggableResizable
     },
     methods: {
+        isLoading(load) {
+            return load;
+        },
         resetForm(formName) {
             this.$refs[formName].resetFields();
         },
@@ -588,10 +550,15 @@ export default {
                 return Message.error('请选勾选服务器')
             }
 
+            let ips = this.multipleSelection.map(item => item.ip);
+            this.uploadData['ips'] = ips;
+
             let formData = new FormData();
             this.fileList.forEach(file=>{
                 formData.append('file', file.raw);		
-            })
+            });
+            
+            formData.append('ips', ips);		
 
             const resp = await assetsUpload(formData, this.callMethod);
 
@@ -642,53 +609,17 @@ export default {
         createUuid() {
             return uuidv4();
         },
-        open(action, title, process) {
-            MessageBox.confirm(title, '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).then(() => {
-                let ip = "";
-                let uuid = "";
-                let project = "";
-                let params = "";
-                switch (action) {
-                    case 'sin':
-                        for (let i = 0; i < this.multipleSelection.length; i++) {
-                            ip = this.multipleSelection[i].ip;
-                            project = this.multipleSelection[i].project;
-                            uuid = this.createUuid();
-                            this.isJump
-                            params = {ip, uuid, project};
-                            this.runningJumpOrNot(params, process);
-                        }
-                        break
-                    case 'mul':
-                        for (let i = 0; i < this.multipleSelection.length; i++) {
-                            for (let t = 0; t < this.selectVal.length; t++) {
-                                ip = this.multipleSelection[i].ip;
-                                uuid = this.createUuid();
-                                project = this.multipleSelection[i].project;
-                                params = {ip, uuid, project};
-                                this.runningJumpOrNot(params, this.selectVal[t]);
-                            }
-                        }
-                        break
-                }
-
-                Message.success(`${process}操作已提交`);
-            }).catch((err) => {
-                console.log(err);
-                Message.info(`${process}操作已取消`);       
-            });
-        },
         // 程序更新的入口
-        runProcess(action, name) {
+        runProcess(action, name, index) {
             if (this.multipleSelection.length === 0) {
                 return Message.error("请勾选服务器");
             }
 
-            this.loopRunning();
+            if (action==="mul") {
+                if (this.selectVal.length===0) {
+                    return Message.error("请选择操作");
+                }
+            }
 
             let title = "";
             let ip = this.multipleSelection.map(item => item.ip);
@@ -696,16 +627,122 @@ export default {
             switch (action) {
                 case "sin":
                     title = "服务器: " + ip.join("&") + ", 确定操作: " + name + "吗？";
-                    this.open('sin', title, name);
+                    this.open('sin', title, name, index);
                     break
                 case "mul":
                     title = "服务器: " + ip.join("&") + ", 确定操作: " + this.selectVal.join("&") + "吗？";
-                    this.open('mul', title, this.selectVal.join("&"));
+                    this.open('mul', title, this.selectVal.join("&"), index);
                     break
             }
-
-            this.isLoop = true;
             
+        },
+        // 改成一次请求提交多个
+        open(action, title, process, index) {
+            MessageBox.confirm(title, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+
+                this.confirmUpdate(action, process, index);
+
+                // Message.success(`${process}操作已提交`);
+            }).catch((err) => {
+                console.log(err);
+                Message.info(`${process}操作已取消`);       
+            });
+        },
+        // 确定更新
+        async confirmUpdate(action,process, index) {
+            let data_list = [];
+            let ip = "";
+            let uuid = "";
+            let project = "";
+            let params = "";
+            let operator = sessionStorage.getItem("user");
+            switch (action) {
+                case 'sin':
+                    this.processList[index].load = true;
+                    for (let i = 0; i < this.multipleSelection.length; i++) {
+                        ip = this.multipleSelection[i].ip;
+                        project = this.multipleSelection[i].project;
+                        uuid = this.createUuid();
+                        params = {ip, uuid, project, update_name: process, operator};
+                        data_list.push(params);
+                    }
+                    break
+                case 'mul':
+                    this.submitLoading = true;
+                    for (let i = 0; i < this.multipleSelection.length; i++) {
+                        for (let t = 0; t < this.selectVal.length; t++) {
+                            ip = this.multipleSelection[i].ip;
+                            uuid = this.createUuid();
+                            project = this.multipleSelection[i].project;
+                            params = {ip, uuid, project, update_name: this.selectVal[t], operator};
+                            data_list.push(params);
+                        }
+                    }
+                    break
+            }
+            
+            const resp = await this.createProcessUpdateRecord(data_list);
+            if (resp.data.code === 10000) {
+                Message.success(resp.data.message);
+                this.loopRunning();
+                this.runningJumpOrNot(data_list);
+            } else {
+                Message.error(resp.data.message);
+            }
+            this.processList[index].load = false;
+            this.submitLoading = false;
+        },
+        // 更新列表添加数据
+        async createProcessUpdateRecord(data) {
+            const resp = await createProcessUpdateRecord(JSON.stringify({data_list: data}), this.callMethod)
+            return resp
+        },
+        // 实时获取更新状态
+        loopRunning() {
+            this.timer = setInterval(() => {
+                this.getUpdateList("page", "", 200);
+            }, 3000)
+        },
+        // 是否需要在新的页面打开，实时查看更新脚本的输出内容
+        async runningJumpOrNot(data_list) {
+            for (let i = 0;i < data_list.length;i++) {
+                // 在新的页面执行
+                if (this.isJump) {
+                    let routeData = this.$router.resolve(
+                        { path: `/assets/update/${data_list[i].project}/${data_list[i].ip}/${this.processName[data_list[i].update_name]}/${data_list[i].uuid}` }
+                    );
+                    window.open(routeData.href, '_blank');
+                } else {
+                    // 当前页面执行
+                    console.log(data_list[i]);
+                    const resp = await this.currentPageRunning(data_list[i]);
+                    if (resp.data.code !== 10000) {
+                        return Message.error(resp.data.message)
+                    }
+                }
+            }
+        },
+        // 在当前页面执行
+        async currentPageRunning(data) {
+            const resp = await runningProcess({
+                ip: data.ip,
+                uuid: data.uuid,
+                update_name: this.processName[data.update_name]
+            }, this.callMethod);
+            return resp
+        },
+        // 查看脚本执行的输出
+        viewContent (row) {
+            this.content = [];
+            this.resultVisible = true;
+            this.curIp = row.ip;
+            this.curName = row.update_name;
+            this.curProject = row.project;
+            this.contentOutput(row);
         },
         // 资产列表
         async getAssetsList() {
@@ -723,12 +760,6 @@ export default {
             this.total = resp.data.total;
             this.tableLoad = false;
 
-        },
-        // 实时获取更新状态
-        loopRunning() {
-            this.timer = setInterval(() => {
-                this.getUpdateList("page", "", 200);
-            }, 3000)
         },
         // 更新列表
         async getUpdateList(action, status, cancel) {
@@ -780,68 +811,6 @@ export default {
             this.tableLoad2 = false;
 
         },
-        // 更新列表添加数据
-        async createProcessUpdateRecord(data) {
-            const resp = await createProcessUpdateRecord({
-                ip: data.ip,
-                uuid: data.uuid,
-                project: data.project,
-                operator: "lxb",
-                update_name: data.update_name,
-            }, this.callMethod)
-
-            return resp
-        },
-        // 在当前页面执行
-        async currentPageRunning(data) {
-            const resp = await runningProcess({
-                ip: data.ip,
-                uuid: data.uuid,
-                update_name: this.processName[data.update_name]
-            }, this.callMethod);
-            return resp
-        },
-        // 是否需要在新的页面打开，实时查看更新脚本的输出内容
-        async runningJumpOrNot(row, name) {
-            let data = {};
-            this.curIp = row.ip;
-            this.curName = name;
-
-            data['ip'] = row.ip;
-            data['update_name'] = name;
-            data['uuid'] = row.uuid;
-            data['project'] = row.project;
-            
-            // 现在更新列表里创建
-            const resp = await this.createProcessUpdateRecord(data);
-            if (resp.data.code !== 10000) {
-                return Message.error(resp.data.message)
-            }
-            
-            // 在新的页面执行
-            if (this.isJump) {
-                let routeData = this.$router.resolve(
-                    { path: `/assets/update/${row.project}/${row.ip}/${this.processName[name]}/${row.uuid}` }
-                );
-                window.open(routeData.href, '_blank');
-            } else {
-                // 当前页面执行
-                const resp = await this.currentPageRunning(data);
-                if (resp.data.code !== 10000) {
-                    return Message.error(resp.data.message)
-                }
-            }
-            
-        },
-        // 查看脚本执行的输出
-        viewContent (row) {
-            this.content = [];
-            this.resultVisible = true;
-            this.curIp = row.ip;
-            this.curName = row.update_name;
-            this.curProject = row.project;
-            this.singleContent(row);
-        },
         handleDelete (data) {
             this.delServer('sig', data);
         },
@@ -860,7 +829,7 @@ export default {
             this.pages2.curPage = val;
             this.getUpdateList('page', this.updatestatus, 200);
         },
-        singleContent(val) {
+        contentOutput(val) {
             this.logLoading = true;
             let data = {
                 ip: val.ip,
@@ -906,8 +875,8 @@ export default {
     mounted () {
         this.getUpdateList('page', '', 200);
         this.getAssetsList();
-        const hash = CryptoJS.MD5("fileData");
-        console.log(hash.toString());
+        // const hash = CryptoJS.MD5("fileData");
+        // console.log(hash.toString());
     },
     filters: {
         formatDate(date) {
