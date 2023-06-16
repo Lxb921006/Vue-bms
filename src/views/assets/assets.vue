@@ -551,7 +551,6 @@ export default {
             }
 
             let ips = this.multipleSelection.map(item => item.ip);
-            this.uploadData['ips'] = ips;
 
             let formData = new FormData();
             this.fileList.forEach(file=>{
