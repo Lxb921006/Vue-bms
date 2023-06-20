@@ -20,7 +20,7 @@
                             multiple
                             :auto-upload="false">
                             <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-                            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload2">分发到指定服务器</el-button>
+                            <el-button style="margin-left: 10px;" size="small" type="success" @click="uploadFile" :loading="uploadLoading">分发到指定服务器</el-button>
                             <div slot="tip" class="el-upload__tip size">这里可以上传文件, 系统会批量的分发到勾选的服务器然后再点击对应按钮更新或重启</div>
                         </el-upload>
                     </el-row>
@@ -77,7 +77,7 @@
                             <el-button type="primary"  size="mini" icon="el-icon-circle-plus-outline" @click="openCreateDialog()" v-if="isHidden('/assets/add', permissionList)">新建</el-button>
                         </el-col>
                         <el-col :span="2" class="c1">
-                            <el-link type="primary" @click="oc">{{ detailContent }}<i :class="detailICon"></i> </el-link>
+                            <el-link type="primary" @click="updateSetup">{{ detailContent }}<i :class="detailICon"></i> </el-link>
                         </el-col>
                     </div>
                     </el-row>
@@ -326,6 +326,7 @@ import baseUrl from "../../utils/baseUrl";
 import wssUrl from "../../utils/wssUrl";
 import VueDraggableResizable from 'vue-draggable-resizable'
 import 'vue-draggable-resizable/dist/VueDraggableResizable.css';
+import SparkMD5 from 'spark-md5';
 
 export default {
     name: "assets",
@@ -357,12 +358,12 @@ export default {
             curIp: "",
             curName: "",
             curProject:"",
+            timer: "",
             runningNum: 0,
             finishedNum: 0,
             failedNum: 0,
             total:5,
             total2:5,
-            timer: "",
             nowLoading: false,
             isDelUpdateLog: false,
             submitLoading: false,
@@ -375,6 +376,7 @@ export default {
             tableLoad2:true,
             tableLoad: true,
             logLoading: true,
+            uploadLoading: false,
             detailContent: "更新设置",
             detailICon: "el-icon-arrow-down",
             updateRunning: [],
@@ -434,9 +436,6 @@ export default {
         // VueDraggableResizable
     },
     methods: {
-        isLoading(load) {
-            return load;
-        },
         resetForm(formName) {
             this.$refs[formName].resetFields();
         },
@@ -530,18 +529,40 @@ export default {
         uploadUrl() {
             return `${baseUrl}/assets/upload`
         },
-        submitUpload() {
-            if (this.$refs.upload.uploadFiles.length === 0) {
-                return Message.error('请选取文件')
-            }
-
-            if (this.multipleSelection.length === 0) {
-                return Message.error('请选勾选服务器')
-            }
-
-            this.$refs.upload.submit();
+        // 显示文件MD5码
+        showFileMd5() {
+            let fl = this.$refs.upload.uploadFiles;
+            let n = "";
+            let o = "";
+            fl.forEach((file)=>{
+                let blob = new Blob([file.raw], { type: file.type });
+                let reader = new FileReader();
+                reader.onload = (event) => {
+                    let arrayBuffer = event.target.result
+                    let md5 = SparkMD5.ArrayBuffer.hash(arrayBuffer);
+                    o = file.name;
+                    n = o + " " + " " + " " + "md5码: " + md5;
+                    file.name = n;
+                }
+                reader.readAsArrayBuffer(blob);
+            })
         },
-        async submitUpload2() {
+        // 文件MD5
+        getFileMd5() {
+            this.fileList.forEach((item)=>{
+                let blob = new Blob([item.raw], { type: item.type });
+                let reader = new FileReader();
+                reader.onload = (event) => {
+                    let arrayBuffer = event.target.result
+                    let md5 = SparkMD5.ArrayBuffer.hash(arrayBuffer);
+                    item.md5 = md5;
+                }
+                reader.readAsArrayBuffer(blob);
+            })
+            console.log("fileList", this.fileList);
+        },
+        // 文件上传
+        async uploadFile() {
             if (this.$refs.upload.uploadFiles.length === 0) {
                 return Message.error('请选取文件')
             }
@@ -549,23 +570,27 @@ export default {
             if (this.multipleSelection.length === 0) {
                 return Message.error('请选勾选服务器')
             }
+
+            this.uploadLoading = true;
 
             let ips = this.multipleSelection.map(item => item.ip);
 
             let formData = new FormData();
             this.fileList.forEach(file=>{
-                formData.append('file', file.raw);		
+                formData.append('file', file.raw);
             });
             
             formData.append('ips', ips);		
 
             const resp = await assetsUpload(formData, this.callMethod);
 
-            this.fileList.forEach(file=>{
-                this.handleSuccess(resp, file);
-            })
-
             if (resp.data.code === 10000) {
+                this.uploadLoading = false;
+                // this.getFileMd5();
+                this.showFileMd5();
+                this.fileList.forEach(file=>{
+                    this.handleSuccess(resp, file);
+                })
                 Message.success(resp.data.message);
             } else {
                 Message.error(resp.data.message);
@@ -588,7 +613,6 @@ export default {
             this.fileList = fileList;
             console.log(this.fileList);
         },
-        beforeUpload(file) {},
         handleExceed(files, fileList) {
             Message.error("最多10个文件同时上传")
         },
@@ -600,7 +624,8 @@ export default {
             const randomSuffix = Math.floor(Math.random() * 1000000);
             return `${now}-${randomSuffix}`;
         },
-        oc () {
+        // 更新设置
+        updateSetup () {
             // this.detailContent = this.detailContent === "展开" ? "收起" : "展开";
             this.detailICon = this.detailICon === "el-icon-arrow-down" ? "el-icon-arrow-up" : "el-icon-arrow-down";
             this.detailView = this.detailView === false ? true : false;
@@ -770,7 +795,7 @@ export default {
                 clearInterval(this.timer);
             }
 
-            if (status==="进行中") {
+            if (status==="更新中") {
                 this.updatestatus = status;
                 check_status=400;
             } else if (status==="完成") {
@@ -874,8 +899,6 @@ export default {
     mounted () {
         this.getUpdateList('page', '', 200);
         this.getAssetsList();
-        // const hash = CryptoJS.MD5("fileData");
-        // console.log(hash.toString());
     },
     filters: {
         formatDate(date) {
