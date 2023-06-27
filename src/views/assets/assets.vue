@@ -20,7 +20,7 @@
                             multiple
                             :auto-upload="false">
                             <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-                            <el-button style="margin-left: 10px;" size="small" type="success" @click="uploadFile" :loading="uploadLoading">分发到指定服务器</el-button>
+                            <el-button style="margin-left: 10px;" size="small" type="success" @click="uploadFile()" :loading="uploadLoading">分发到指定服务器</el-button>
                             <div slot="tip" class="el-upload__tip size">这里可以上传文件, 系统会批量的分发到勾选的服务器然后再点击对应按钮更新或重启</div>
                         </el-upload>
                     </el-row>
@@ -583,6 +583,7 @@ export default {
             formData.append('ips', ips);		
 
             const resp = await assetsUpload(formData, this.callMethod);
+            console.log("resp >>>", resp);
 
             if (resp.data.code === 10000) {
                 this.uploadLoading = false;
@@ -611,7 +612,6 @@ export default {
         },
         handleChange(file, fileList) {
             this.fileList = fileList;
-            console.log(this.fileList);
         },
         handleExceed(files, fileList) {
             Message.error("最多10个文件同时上传")
