@@ -50,9 +50,10 @@
                 <div class="search">
                     <el-row :gutter=10>
                         <el-col :span="3.9">
-                            <el-input v-model="searchData" placeholder="请输入" size="mini" clearable>
-                                <el-button slot="append" icon="el-icon-search" size="mini"></el-button>
-                            </el-input>
+                            <el-input v-model="projectSearch" placeholder="请输入项目名" size="mini" clearable @keyup.enter.native="getAssetsList('search')" @clear="getAssetsList('search')"></el-input>
+                        </el-col>
+                        <el-col :span="3.9">
+                            <el-input v-model="serverSearch" placeholder="请输入ip" size="mini" clearable @keyup.enter.native="getAssetsList('search')" @clear="getAssetsList('search')"></el-input>
                         </el-col>
                         <div class="mul-op">
                         <el-col :span="3.9">
@@ -178,7 +179,7 @@
                     </el-row>
                 </div>
                 <div class="table">
-                    <el-table v-loading="tableLoad2" stripe  :data="dataList2" @selection-change="handleSelectionChange"
+                    <el-table v-loading="tableLoad2" stripe  :data="dataList2" @selection-change="handleSelectionChange2"
                     element-loading-text="拼命加载中" :row-key="getRowKey"
                 >
                     <el-table-column type="selection" width="55" :reserve-selection="true"></el-table-column>
@@ -359,6 +360,8 @@ export default {
             curName: "",
             curProject:"",
             timer: "",
+            serverSearch: "",
+            projectSearch: "",
             runningNum: 0,
             finishedNum: 0,
             failedNum: 0,
@@ -386,6 +389,7 @@ export default {
             projectList: [],
             finished: [],
             multipleSelection: [],
+            multipleSelection2: [],
             dataList: [],
             dataList2: [],
             uploadData: {},
@@ -404,6 +408,7 @@ export default {
             processList: [
                 {pid:2, name: "docker更新", action: 1, value: "dockerUpdate", type: 1, load: false,},
                 {pid:4, name: "java更新", action: 2, value: "javaUpdate", type: 1, load: false,},
+                {pid:7, name: "同步java", action: 2, value: "syncJava", type: 1, load: false,},
                 {pid:5, name: "重启docker", action: 3, value: "dockerReload", type: 2, load: false,},
                 {pid:6, name: "重启java", action: 4, value: "javaReload", type: 2, load: false,},
             ],
@@ -530,7 +535,7 @@ export default {
             return `${baseUrl}/assets/upload`
         },
         // 显示文件MD5码
-        showFileMd5() {
+        showFileMd5(resp) {
             let fl = this.$refs.upload.uploadFiles;
             let n = "";
             let o = "";
@@ -541,7 +546,7 @@ export default {
                     let arrayBuffer = event.target.result
                     let md5 = SparkMD5.ArrayBuffer.hash(arrayBuffer);
                     o = file.name;
-                    n = o + " " + " " + " " + "md5码: " + md5;
+                    n = o + " " + " " + " " + "md5: " + md5;
                     file.name = n;
                 }
                 reader.readAsArrayBuffer(blob);
@@ -573,22 +578,19 @@ export default {
 
             this.uploadLoading = true;
 
-            let ips = this.multipleSelection.map(item => item.ip);
-
             let formData = new FormData();
             this.fileList.forEach(file=>{
                 formData.append('file', file.raw);
             });
-            
-            formData.append('ips', ips);		
+
+            this.multipleSelection.map(item => {
+                formData.append('ips', item.ip)
+            });
 
             const resp = await assetsUpload(formData, this.callMethod);
-            console.log("resp >>>", resp);
-
             if (resp.data.code === 10000) {
                 this.uploadLoading = false;
-                // this.getFileMd5();
-                this.showFileMd5();
+                this.showFileMd5(resp.data.data);
                 this.fileList.forEach(file=>{
                     this.handleSuccess(resp, file);
                 })
@@ -742,7 +744,6 @@ export default {
                     window.open(routeData.href, '_blank');
                 } else {
                     // 当前页面执行
-                    console.log(data_list[i]);
                     const resp = await this.currentPageRunning(data_list[i]);
                     if (resp.data.code !== 10000) {
                         return Message.error(resp.data.message)
@@ -768,9 +769,25 @@ export default {
             this.curProject = row.project;
             this.contentOutput(row);
         },
-        // 资产列表
-        async getAssetsList() {
-            let data = {page:this.pages.curPage};
+        // 服务器列表
+        async getAssetsList(mode) {
+            this.tableLoad = true;
+            var pageNum = 0;
+            switch (mode) {
+                case "page":
+                    pageNum = this.pages.curPage;
+                    break
+                case "search":
+                    pageNum = 1;
+                    break
+            }
+
+            let data = {
+                page: pageNum,
+                ip: this.serverSearch,
+                project: this.projectSearch,
+            };
+
             const resp = await getAssetsList(data).catch(err => {
                 this.tableLoad = false;
             })
@@ -787,6 +804,7 @@ export default {
         },
         // 更新列表
         async getUpdateList(action, status, cancel) {
+            this.tableLoad2 = true;
             let data = {};
             let check_status = "";
             let pageNum = 1;
@@ -840,6 +858,9 @@ export default {
         },
         handleSelectionChange(val) {
             this.multipleSelection = val;
+        },
+        handleSelectionChange2(val) {
+            this.multipleSelection2 = val;
         },
         handleCurrentChange(val) {
             this.pages.curPage = val;
@@ -897,8 +918,8 @@ export default {
         },
     },
     mounted () {
-        this.getUpdateList('page', '', 200);
-        this.getAssetsList();
+        this.getUpdateList("page", '', 200);
+        this.getAssetsList("page");
     },
     filters: {
         formatDate(date) {

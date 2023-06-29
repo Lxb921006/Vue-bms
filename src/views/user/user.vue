@@ -375,9 +375,10 @@ export default {
         })
     },
     methods:{
-        async ListUser(model) {
+        async ListUser(mode) {
+            this.tableLoad = true;
             var pageNum = 0;
-            switch (model) {
+            switch (mode) {
                 case "page":
                     pageNum = this.pages.curPage;
                     break
