@@ -206,6 +206,7 @@ export default {
     },
     methods:{
         async RolesList() {
+            this.tableLoad = true;
             const resp = await getRolesList({
                 rolename: this.rolename,
                 page: this.pages.curPage,

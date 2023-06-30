@@ -151,6 +151,7 @@ export default {
     },
     methods:{
         async PermsList() {
+            this.tableLoad = true;
             const resp = await getPermsList({
                 page:this.pages.curPage,
             });

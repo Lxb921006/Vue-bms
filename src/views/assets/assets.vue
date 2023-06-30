@@ -274,6 +274,7 @@
                 </span>
             </el-dialog>
         </div>
+        <!-- 脚本日志 -->
         <div class="result">
             <el-dialog
                 title="脚本输出"
@@ -309,6 +310,43 @@
                         </div>
                         <div class="format-code">
                             <pre><code>{{ content.join('') }}</code></pre>
+                        </div>
+                    </el-card>
+                </div>
+                </el-dialog>
+        </div>
+        <!-- 分发文件窗口 -->
+        <div class="syncFile">
+            <el-dialog
+                title="文件同步"
+                :visible.sync="syncFileVisible"
+                width="50%"
+                center
+                >
+                <div class="result-title">
+                    <el-card v-loading="syncFileLoading"
+                            element-loading-text="正在拼命同步中..."
+                            element-loading-spinner="el-icon-loading">
+                        <el-divider><strong><i class="el-icon-platform-eleme"></i>文件同步</strong></el-divider>
+                        <p class="op-name">
+                            <el-row :gutter="10">
+                                <el-col :span="1.9" >
+                                    <el-tag effect="plain"  type="success">{{ fileNameList.join(', ') }}</el-tag>
+                                </el-col>
+                            </el-row>
+                        </p>
+                    </el-card>
+                </div>
+                <div class="result-data">
+                    <el-card v-loading="logLoading"
+                            element-loading-text="正在拼命连接中..."
+                            element-loading-spinner="el-icon-loading">
+                        <el-divider><strong><i class="el-icon-platform-eleme"></i>文件同步</strong></el-divider>
+                        <div class="copy">
+                            <el-button type="success" size="mini" plain @click="copy(syncFileContent.join(''))">复制</el-button>
+                        </div>
+                        <div class="format-code">
+                            <pre><code>{{ syncFileContent.join('') }}</code></pre>
                         </div>
                     </el-card>
                 </div>
@@ -367,7 +405,9 @@ export default {
             failedNum: 0,
             total:5,
             total2:5,
+            syncFileLoading: true,
             nowLoading: false,
+            syncFileVisible: false,
             isDelUpdateLog: false,
             submitLoading: false,
             isJump: false,
@@ -386,8 +426,10 @@ export default {
             fileList: [],
             selectVal: [],
             content: [],
+            syncFileContent: [],
             projectList: [],
             finished: [],
+            fileNameList: [],
             multipleSelection: [],
             multipleSelection2: [],
             dataList: [],
@@ -408,7 +450,6 @@ export default {
             processList: [
                 {pid:2, name: "docker更新", action: 1, value: "dockerUpdate", type: 1, load: false,},
                 {pid:4, name: "java更新", action: 2, value: "javaUpdate", type: 1, load: false,},
-                {pid:7, name: "同步java", action: 2, value: "syncJava", type: 1, load: false,},
                 {pid:5, name: "重启docker", action: 3, value: "dockerReload", type: 2, load: false,},
                 {pid:6, name: "重启java", action: 4, value: "javaReload", type: 2, load: false,},
             ],
@@ -548,6 +589,7 @@ export default {
                     o = file.name;
                     n = o + " " + " " + " " + "md5: " + md5;
                     file.name = n;
+                    this.fileNameList.push(o);
                 }
                 reader.readAsArrayBuffer(blob);
             })
@@ -594,6 +636,7 @@ export default {
                 this.fileList.forEach(file=>{
                     this.handleSuccess(resp, file);
                 })
+                this.viewSyncFileContent();
                 Message.success(resp.data.message);
             } else {
                 Message.error(resp.data.message);
@@ -669,9 +712,7 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-
                 this.confirmUpdate(action, process, index);
-
                 // Message.success(`${process}操作已提交`);
             }).catch((err) => {
                 console.log(err);
@@ -724,7 +765,7 @@ export default {
         },
         // 更新列表添加数据
         async createProcessUpdateRecord(data) {
-            const resp = await createProcessUpdateRecord(JSON.stringify({data_list: data}), this.callMethod)
+            const resp = await createProcessUpdateRecord(JSON.stringify({data_list: data}), this.callMethod).catch((err)=>{;Message.error(err);})
             return resp
         },
         // 实时获取更新状态
@@ -757,7 +798,7 @@ export default {
                 ip: data.ip,
                 uuid: data.uuid,
                 update_name: this.processName[data.update_name]
-            }, this.callMethod);
+            }, this.callMethod).catch((err)=>{Message.error(err)});
             return resp
         },
         // 查看脚本执行的输出
@@ -768,6 +809,11 @@ export default {
             this.curName = row.update_name;
             this.curProject = row.project;
             this.contentOutput(row);
+        },
+        // 分发文件
+        viewSyncFileContent() {
+            this.syncFileVisible = true;
+            this.syncFileOutput();
         },
         // 服务器列表
         async getAssetsList(mode) {
@@ -788,8 +834,9 @@ export default {
                 project: this.projectSearch,
             };
 
-            const resp = await getAssetsList(data).catch(err => {
+            const resp = await getAssetsList(data).catch((err) => {
                 this.tableLoad = false;
+                ;Message.error(err);
             })
 
             if (resp.data.code !== 10000) {
@@ -842,7 +889,7 @@ export default {
                 status: check_status,
             };
             
-            const resp = await getUpdateList(data).catch(()=>{this.tableLoad2 = false;})
+            const resp = await getUpdateList(data).catch((err)=>{this.tableLoad2 = false;Message.error(err)});
             if (resp.data.code !== 10000) {
                 return Message.error(resp.data.message)
             }
@@ -900,6 +947,34 @@ export default {
                 Message.error('WebSocket连接出错:', error);
             };
         },
+        syncFileOutput() {
+            this.logLoading = true;
+            let data = {
+                ip: this.multipleSelection.map(item => item.ip),
+                file: this.fileList.map(file => file.name)
+            }
+            this.ws = new WebSocket(wssUrl+"/assets/file/ws?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"));
+            this.ws.onopen = () => {
+                this.logLoading = false;
+                console.log('WebSocket连接已打开');
+                this.ws.send(JSON.stringify(data));
+            };
+            this.ws.onmessage = (event) => {
+                this.syncFileContent.push(event.data);
+                let div = document.querySelector(".result-data");
+                div.scrollTop = div.scrollHeight - div.clientHeight;
+            };
+            this.ws.onclose = () => {
+                console.log('WebSocket连接已关闭');
+                this.syncFileLoading = false;
+                Message.success("同步完成");
+            };
+            this.ws.onerror = (error) => {
+                this.logLoading = false;
+                Message.error('WebSocket连接出错:', error);
+                this.syncFileLoading = false;
+            };
+        },
         callMethod() {},
         isHidden(path, routers=[]) {
             if (routers !== null){
@@ -936,6 +1011,14 @@ export default {
             if (min < 10) min = '0' + min;
             if (seconds < 10) seconds = '0' + seconds;
             return (year + '-' + month + '-' + day + ' ' + hours + ':' + min + ':' + seconds);
+        },
+        getIp(data) {
+            let fd = data.map(ip => ip.ip);
+            return fd.join(',');
+        },
+        getName(data) {
+            let fd =  data.map(file => file.name);
+            return fd.join(',');
         },
     },
 }

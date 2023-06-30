@@ -217,6 +217,12 @@ const dynamicRoutes = [
             meta: { name: 'websocket连接'},
             hidden: false,
           },
+          {
+            path:'/assets/file/ws',
+            name: 'syncFileWs',
+            meta: { name: '同步文件'},
+            hidden: false,
+          },
         ],
       },
     ],

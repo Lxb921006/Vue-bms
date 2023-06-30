@@ -25,7 +25,6 @@ instance.interceptors.response.use(resp => {
     // 响应拦截逻辑写在这里
     return Promise.resolve(resp) // 异步调用方式将回调函数作为函数参数返回
 }, err => {
-    console.log(err);
     switch (err.response.status) {
         case 400:
             Message.error(err.response.data.message);

@@ -86,6 +86,7 @@ export default {
     },
     methods: {
         async OperateLogList() {
+            this.tableLoad = true;
             const resp = await getOperateLogList({
                 page: this.pages.curPage,
                 url: this.url,
@@ -94,8 +95,6 @@ export default {
                 starttime: this.datetime ? this.datetime[0] : "",
                 endtime: this.datetime ? this.datetime[1] : "",
             }).catch(err => this.tableLoad = false); 
-
-            console.log("operate.vue resp = ", resp)
             
             if (resp.data.code !== 10000) {
                 this.tableLoad = false;
