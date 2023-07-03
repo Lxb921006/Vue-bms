@@ -23,7 +23,7 @@
             <!-- 数据表格 -->
             <div class="table">
                 <el-table v-loading="tableLoad" stripe border :data="roleList" :header-cell-style="{background: '#FAFAFA'}"
-                    element-loading-text="拼命加载中" 
+                    element-loading-text="拼命加载中"  ref="multipleTable" @row-click="tableRowClick"
                 >
                 <el-table-column type="expand">
                     <template slot-scope="scope">
@@ -205,6 +205,9 @@ export default {
         })
     },
     methods:{
+        tableRowClick(row, column, event) {
+            this.$refs.multipleTable.toggleRowSelection(row);
+        },
         async RolesList() {
             this.tableLoad = true;
             const resp = await getRolesList({
@@ -450,5 +453,8 @@ export default {
 }
 :deep .el-dialog--center .el-dialog__footer {
     background-color: #f9f9f9;
+}
+:deep .el-table tr {
+    cursor: pointer;
 }
 </style>>

@@ -21,7 +21,7 @@
             </div>
             <div class="table">
                 <el-table v-loading="tableLoad" stripe  :data="permsList" @selection-change="handleSelectionChange"
-                        element-loading-text="拼命加载中"
+                        element-loading-text="拼命加载中" ref="multipleTable" @row-click="tableRowClick"
                     >
                     <el-table-column type="selection" width="55"></el-table-column>
                     <el-table-column prop="ID" label="id"></el-table-column>
@@ -150,6 +150,9 @@ export default {
         })
     },
     methods:{
+        tableRowClick(row, column, event) {
+            this.$refs.multipleTable.toggleRowSelection(row);
+        },
         async PermsList() {
             this.tableLoad = true;
             const resp = await getPermsList({
@@ -294,5 +297,8 @@ export default {
 }
 :deep .el-dialog--center .el-dialog__footer {
     background-color: #f9f9f9;
+}
+:deep .el-table tr {
+    cursor: pointer;
 }
 </style>

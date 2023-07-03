@@ -103,8 +103,8 @@
                     </transition>
                     
                     <el-table v-loading="tableLoad" stripe  :data="dataList" @selection-change="handleSelectionChange"
-                    element-loading-text="拼命加载中"
-                >
+                        element-loading-text="拼命加载中" ref="multipleTable" @row-click="tableRowClick"
+                    >
                     <el-table-column type="selection" width="55"></el-table-column>
                     <el-table-column prop="id" label="id"></el-table-column>
                     <el-table-column prop="project" label="项目"></el-table-column>
@@ -180,8 +180,8 @@
                 </div>
                 <div class="table">
                     <el-table v-loading="tableLoad2" stripe  :data="dataList2" @selection-change="handleSelectionChange2"
-                    element-loading-text="拼命加载中" :row-key="getRowKey"
-                >
+                        element-loading-text="拼命加载中" :row-key="getRowKey" ref="multipleTable2" @row-click="tableRowClick2"
+                    >
                     <el-table-column type="selection" width="55" :reserve-selection="true"></el-table-column>
                     <el-table-column prop="id" label="id"></el-table-column>
                     <el-table-column prop="uuid" label="uuid" width="350"></el-table-column>
@@ -330,8 +330,8 @@
                         <el-divider><strong><i class="el-icon-platform-eleme"></i>文件同步</strong></el-divider>
                         <p class="op-name">
                             <el-row :gutter="10">
-                                <el-col :span="1.9" >
-                                    <el-tag effect="plain"  type="success">{{ fileNameList.join(', ') }}</el-tag>
+                                <el-col :span="1.9">
+                                    <el-link effect="plain" :underline="false" type="success">{{ fileNameList.join(', ') }}</el-link>
                                 </el-col>
                             </el-row>
                         </p>
@@ -441,26 +441,14 @@ export default {
             },
             rules: {
                 project: [
-                        { validator: validateproject, trigger: 'blur' }
-                    ],
+                    { validator: validateproject, trigger: 'blur' }
+                ],
                 ip: [
                     { validator: validateip, trigger: 'blur' }
                 ],
             },
-            processList: [
-                {pid:2, name: "docker更新", action: 1, value: "dockerUpdate", type: 1, load: false,},
-                {pid:4, name: "java更新", action: 2, value: "javaUpdate", type: 1, load: false,},
-                {pid:5, name: "重启docker", action: 3, value: "dockerReload", type: 2, load: false,},
-                {pid:6, name: "重启java", action: 4, value: "javaReload", type: 2, load: false,},
-            ],
-            processName: {
-                "docker更新": "dockerUpdate", 
-                "java更新": "javaUpdate", 
-                "重启docker": "javaUpdate", 
-                "重启java": "javaReload",
-                "docker更新Log": "dockerUpdateLog",
-                "java更新Log": "javaUpdateLog",
-            },
+            processList: [],
+            processName: {},
             pages: {
                 curPage:1,
                 pageSize:5,
@@ -482,6 +470,12 @@ export default {
         // VueDraggableResizable
     },
     methods: {
+        tableRowClick(row, column, event) {
+            this.$refs.multipleTable.toggleRowSelection(row);
+        },
+        tableRowClick2(row, column, event) {
+            this.$refs.multipleTable2.toggleRowSelection(row);
+        },
         resetForm(formName) {
             this.$refs[formName].resetFields();
         },
@@ -813,6 +807,7 @@ export default {
         // 分发文件
         viewSyncFileContent() {
             this.syncFileVisible = true;
+            this.syncFileContent = [];
             this.syncFileOutput();
         },
         // 服务器列表
@@ -847,7 +842,9 @@ export default {
             this.pages.pageSize = resp.data.pageSize;
             this.total = resp.data.total;
             this.tableLoad = false;
-
+            this.processList = resp.data.config.config;
+            this.processName = resp.data.config.select;
+            console.log(this.processName);
         },
         // 更新列表
         async getUpdateList(action, status, cancel) {
@@ -928,6 +925,7 @@ export default {
                 name: this.processName[val.update_name+"Log"],
                 uuid: val.uuid
             }
+            console.log(data);
             this.ws = new WebSocket(wssUrl+"/assets/ws?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"));
             this.ws.onopen = () => {
                 this.logLoading = false;
@@ -1126,5 +1124,8 @@ export default {
 }
 .process-running-list > div{
     padding: 4px 1px;
+}
+:deep .el-table tr {
+    cursor: pointer;
 }
 </style>
