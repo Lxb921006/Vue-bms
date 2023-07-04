@@ -103,7 +103,7 @@
                     </transition>
                     
                     <el-table v-loading="tableLoad" stripe  :data="dataList" @selection-change="handleSelectionChange"
-                        element-loading-text="拼命加载中" ref="multipleTable" @row-click="tableRowClick"
+                        element-loading-text="拼命加载中" ref="multipleTable" @row-dblclick="tableRowClick"
                     >
                     <el-table-column type="selection" width="55"></el-table-column>
                     <el-table-column prop="id" label="id"></el-table-column>
@@ -180,7 +180,7 @@
                 </div>
                 <div class="table">
                     <el-table v-loading="tableLoad2" stripe  :data="dataList2" @selection-change="handleSelectionChange2"
-                        element-loading-text="拼命加载中" :row-key="getRowKey" ref="multipleTable2" @row-click="tableRowClick2"
+                        element-loading-text="拼命加载中" :row-key="getRowKey" ref="multipleTable2" @row-dblclick="tableRowClick2"
                     >
                     <el-table-column type="selection" width="55" :reserve-selection="true"></el-table-column>
                     <el-table-column prop="id" label="id"></el-table-column>
@@ -765,7 +765,7 @@ export default {
         // 实时获取更新状态
         loopRunning() {
             this.timer = setInterval(() => {
-                this.getUpdateList("page", "", 200);
+                this.getUpdateList("page", "", 200, false);
             }, 3000)
         },
         // 是否需要在新的页面打开，实时查看更新脚本的输出内容
@@ -844,11 +844,15 @@ export default {
             this.tableLoad = false;
             this.processList = resp.data.config.config;
             this.processName = resp.data.config.select;
-            console.log(this.processName);
+
         },
         // 更新列表
-        async getUpdateList(action, status, cancel) {
-            this.tableLoad2 = true;
+        async getUpdateList(action, status, cancel, isload) {
+            // this.tableLoad2 = true;
+            if (isload) {
+                this.tableLoad2 = true;
+            }
+
             let data = {};
             let check_status = "";
             let pageNum = 1;
@@ -912,11 +916,11 @@ export default {
         },
         handleSizeChange2(val) {
             this.pages2.curPage = val;
-            this.getUpdateList('page', this.updatestatus, 200);
+            this.getUpdateList('page', this.updatestatus, 200, true);
         },
         handleCurrentChange2(val) {
             this.pages2.curPage = val;
-            this.getUpdateList('page', this.updatestatus, 200);
+            this.getUpdateList('page', this.updatestatus, 200, true);
         },
         contentOutput(val) {
             this.logLoading = true;
