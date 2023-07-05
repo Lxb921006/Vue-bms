@@ -4,13 +4,13 @@
             <div class="operate">
                 <el-row :gutter="10">
                     <el-col :span="4">
-                        <el-input clearable size="small" @clear="OperateLogList()" placeholder="请输入操作者搜索" suffix-icon="el-icon-date" v-model="operator"></el-input>
+                        <el-input clearable size="small" @clear="OperateLogList('search')" placeholder="请输入操作者搜索" suffix-icon="el-icon-date" v-model="operator"></el-input>
                     </el-col>
                     <el-col :span="4">
-                        <el-input clearable size="small" @clear="OperateLogList()" placeholder="请输入url搜索" suffix-icon="el-icon-date" v-model="url"></el-input>
+                        <el-input clearable size="small" @clear="OperateLogList('search')" placeholder="请输入url搜索" suffix-icon="el-icon-date" v-model="url"></el-input>
                     </el-col>
                     <el-col :span="4">
-                        <el-input clearable size="small" @clear="OperateLogList()" placeholder="请输入ip搜索" suffix-icon="el-icon-date" v-model="ip"></el-input>
+                        <el-input clearable size="small" @clear="OperateLogList('search')" placeholder="请输入ip搜索" suffix-icon="el-icon-date" v-model="ip"></el-input>
                     </el-col>
                     <el-col :span="2.5">
                         <el-date-picker
@@ -22,12 +22,13 @@
                             end-placeholder="结束日期"
                             value-format="yyyy-MM-dd"
                             size="small"
+                            @change="OperateLogList('search')"
                             >
                         </el-date-picker>
                     </el-col>
                     <el-col :span="1">
                         <el-tooltip class="item" effect="dark" content="点击搜索" placement="top-start">
-                            <el-button size="small" type="primary" icon="el-icon-search" circle @click="OperateLogList()"></el-button>
+                            <el-button size="small" type="primary" icon="el-icon-search" circle @click="OperateLogList('search')"></el-button>
                         </el-tooltip>
                     </el-col>
                 </el-row>
@@ -38,8 +39,8 @@
                     >
                     <el-table-column prop="ID" label="id"></el-table-column>
                     <el-table-column prop="operator" label="operator" ></el-table-column>
-                    <el-table-column prop="url" label="url" ></el-table-column>
                     <el-table-column prop="ip" label="ip" ></el-table-column>
+                    <el-table-column prop="url" label="url" show-overflow-tooltip></el-table-column>
                     <!-- <el-table-column prop="CreatedAt" label="visit_time" ></el-table-column> -->
                     <el-table-column prop="CreatedAt" label="visit_time" >
                         <template slot-scope="scope">
@@ -85,10 +86,20 @@ export default {
         }
     },
     methods: {
-        async OperateLogList() {
+        async OperateLogList(mode) {
             this.tableLoad = true;
+            var pageNum = 0;
+            switch (mode) {
+                case "page":
+                    pageNum = this.pages.curPage;
+                    break
+                case "search":
+                    pageNum = 1;
+                    break
+            }
+            
             const resp = await getOperateLogList({
-                page: this.pages.curPage,
+                page: pageNum,
                 url: this.url,
                 ip: this.ip,
                 operator:this.operator,
@@ -101,21 +112,23 @@ export default {
                 return Message.error(resp.data.message)
             }
 
+            // this.handleCurrentChange(pageNum);
             this.operateList = resp.data.data;
             this.total = resp.data.total;
             this.pages.pageSize = resp.data.pageSize;
             this.tableLoad = false;
         },
         handleCurrentChange(val) {
+            console.log("handleCurrentChange >>> ", val);
             this.pages.curPage = val;
-            this.OperateLogList();
+            this.OperateLogList("page");
         },
         handleDatetime() {
             console.log(this.datetime);
         },
     },
     mounted () {
-        this.OperateLogList();
+        this.OperateLogList("page");
     },
     filters: {
         formatDate(date) {

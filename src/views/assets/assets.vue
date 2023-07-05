@@ -754,8 +754,12 @@ export default {
             } else {
                 Message.error(resp.data.message);
             }
-            this.processList[index].load = false;
-            this.submitLoading = false;
+
+            if (action==="sin") {
+                this.processList[index].load = false;
+            } else if (action==="mul") {
+                this.submitLoading = false;
+            }
         },
         // 更新列表添加数据
         async createProcessUpdateRecord(data) {
@@ -766,7 +770,7 @@ export default {
         loopRunning() {
             this.timer = setInterval(() => {
                 this.getUpdateList("page", "", 200, false);
-            }, 3000)
+            }, 2000)
         },
         // 是否需要在新的页面打开，实时查看更新脚本的输出内容
         async runningJumpOrNot(data_list) {
@@ -929,7 +933,6 @@ export default {
                 name: this.processName[val.update_name+"Log"],
                 uuid: val.uuid
             }
-            console.log(data);
             this.ws = new WebSocket(wssUrl+"/assets/ws?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"));
             this.ws.onopen = () => {
                 this.logLoading = false;
