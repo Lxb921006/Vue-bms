@@ -112,6 +112,8 @@ export default {
                 return Message.error(resp.data.message)
             }
 
+            this.pages.curPage = pageNum;
+
             // this.handleCurrentChange(pageNum);
             this.operateList = resp.data.data;
             this.total = resp.data.total;

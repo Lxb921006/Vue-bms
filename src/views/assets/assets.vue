@@ -118,7 +118,7 @@
                     </el-table-column>
                     <el-table-column prop="operate" label="操作" width="250">
                         <template slot-scope="scope">
-                            <el-button size="mini" icon="el-icon-edit" v-if="isHidden('/assets/update', permissionList)">编辑</el-button>
+                            <el-button size="mini" icon="el-icon-edit" v-if="isHidden('/assets/update', permissionList)" @click="openEditDialog(scope.row)">编辑</el-button>
                             <el-popconfirm :title="'确定删除'+scope.row.ip+'吗?'"
                                 icon="el-icon-info"
                                 icon-color="red"
@@ -274,6 +274,38 @@
                 </span>
             </el-dialog>
         </div>
+        <div class="edit">
+            <el-dialog
+                title="修改服务器"
+                :visible.sync="editVisible"
+                center
+                width="600px" 
+                
+                >
+                <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm fix-form-css">
+                    <el-form-item label="id" prop="selectId">
+                        <el-input  type="text" v-model="selectId" autocomplete="off" disabled></el-input>
+                    </el-form-item>
+                    <el-form-item label="项目名" prop="project">
+                        <el-input  type="text" v-model="ruleForm.project" autocomplete="off" clearable></el-input>
+                    </el-form-item>
+                    <el-form-item label="ip" prop="ip">
+                        <el-input :rows="10" v-model="ruleForm.ip" autocomplete="off" placeholder="批量添加ip, 请换行输入" clearable></el-input>
+                    </el-form-item>
+                </el-form>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="resetForm('ruleForm')">重置</el-button>
+                    <el-popconfirm :title="'确定添加吗?'"
+                                    icon="el-icon-info"
+                                    icon-color="red"
+                                    confirm-button-text='确定'
+                                    @confirm="submitForm('ruleForm', createServer)"
+                                >
+                        <el-button type="primary" :loading="editLoad" slot="reference">确 定</el-button>
+                    </el-popconfirm>
+                </span>
+            </el-dialog>
+        </div>
         <!-- 脚本日志 -->
         <div class="result">
             <el-dialog
@@ -358,7 +390,7 @@
 <script>
 import { Message, MessageBox } from 'element-ui'
 import { mapState } from 'vuex'
-import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess, getUpdateList, assetsUpload, createServer, delServer } from '../../api'
+import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess, getUpdateList, assetsUpload, createServer, delServer, editServer } from '../../api'
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 import baseUrl from "../../utils/baseUrl";
@@ -400,6 +432,9 @@ export default {
             timer: "",
             serverSearch: "",
             projectSearch: "",
+            selectProject: "",
+            selectIp: "",
+            selectId: "",
             runningNum: 0,
             finishedNum: 0,
             failedNum: 0,
@@ -414,8 +449,10 @@ export default {
             isLoop: false,
             detailView: false,
             createVisible: false,
+            editVisible: false,
             resultVisible: false,
             createLoad:false,
+            editLoad:false,
             tableLoad2:true,
             tableLoad: true,
             logLoading: true,
@@ -530,14 +567,41 @@ export default {
             if (resp.data.code !== 10000) {
                 Message.error(resp.data.message)
             } else {
-                this.getAssetsList();
+                this.getAssetsList("page");
                 Message.success(resp.data.message)
             }
 
             this.createLoad = false;
         },
         openCreateDialog() {
+            this.ruleForm.project = "";
+            this.ruleForm.ip = "";
             this.createVisible = true;
+        },
+        async editServer() {
+            this.editLoad = true;
+            const regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            if (!regex.test(this.ruleForm.ip)) {
+                return Message.error("格式错误, 只接收ip格式参数")
+            }
+
+            let params = {project: this.ruleForm.project, ip: this.ruleForm.ip, id: this.selectId};
+
+            const resp = await editServer(params, this.callMethod);
+            if (resp.data.code !== 10000) {
+                Message.error(resp.data.message)
+            } else {
+                this.getAssetsList("page");
+                Message.success(resp.data.message)
+            }
+
+            this.editLoad = false;
+        },
+        openEditDialog(row) {
+            this.editVisible = true;
+            this.selectId = row.id;
+            this.ruleForm.project = row.project;
+            this.ruleForm.ip = row.ip;
         },
         copy(text) {
             this.$copyText(text).then(() => {
@@ -842,6 +906,8 @@ export default {
                 return Message.error(resp.data.message)
             }
 
+            this.pages.curPage = pageNum;
+
             this.dataList = resp.data.data;
             this.pages.pageSize = resp.data.pageSize;
             this.total = resp.data.total;
@@ -898,6 +964,8 @@ export default {
             if (resp.data.code !== 10000) {
                 return Message.error(resp.data.message)
             }
+
+            this.pages2.curPage = pageNum;
 
             this.dataList2 = resp.data.data;
             this.pages2.pageSize = resp.data.pageSize;

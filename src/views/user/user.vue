@@ -406,6 +406,8 @@ export default {
                 return Message.error(resp.data.message);
             }
 
+            this.pages.curPage = pageNum;
+
             this.userList = resp.data.data; //用户列表
             this.total = resp.data.total; //用户总数
             this.pages.pageSize = resp.data.pageSize; //一页显示的数据
