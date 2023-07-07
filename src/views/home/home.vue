@@ -124,6 +124,7 @@ export default {
         ...mapState({
             'permissionList': state => state.addRouters.permissionList,
             'permsLoad': state => state.addRouters.permsLoad,
+            'menuList': state => state.menuTabs.menuTabList,
         })
     },
     watch: {
@@ -148,6 +149,7 @@ export default {
                 this.editableTabs.push(data);
             }
             this.editableTabsValue = data.path;
+            store.commit('UPDATE_TABS', this.editableTabs);
         },
         removeTab (targetName) {
             let tabs = this.editableTabs;
@@ -168,7 +170,9 @@ export default {
             this.editableTabs = tabs.filter(tab => tab.path !== targetName);
             this.$router.replace(this.editableTabsValue,
                 onComplete => {},
-                onAbort => {});
+                onAbort => {}
+            );
+            store.commit('UPDATE_TABS', this.editableTabs);
         },
         tabChange(tab) {
             this.$router.replace(tab.name,
@@ -210,7 +214,15 @@ export default {
                 path: this.$route.path
             });
         }
-        this.editableTabsValue = this.$route.path;
+        let tl = window.sessionStorage.getItem('menuTabList');
+        //this.editableTabsValue = this.$route.path;
+        if (tl && tl.length > 0) {
+            this.editableTabs = JSON.parse(tl);
+            this.editableTabsValue = this.$route.path;
+        } else {
+            this.editableTabsValue = this.$route.path;
+        }
+        
         this.user = window.sessionStorage.getItem('user');
     },
 }

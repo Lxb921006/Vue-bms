@@ -12,11 +12,11 @@ export const removePerms = (params, method) => post("/role/rmperms?user="+ sessi
 export const allotPerms = (params, method) => post("/role/allotperms?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const createRole = (params, method) => post("/role/create?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const assetsUpload = (params, method) => post("/assets/upload?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
-export const createProcessUpdateRecord = (params, method) => post("/assets/process/update/create?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
+export const createProgramUpdateRecord = (params, method) => post("/assets/process/update/create?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const createServer = (params, method) => post("/assets/add?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const editServer = (params, method) => post("/assets/update?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const delServer = (params, method) => post("/assets/del?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
-export const runningProcess = (params, method) => post("/assets/api?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
+export const runProgram = (params, method) => post("/assets/api?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params, method);
 export const getUserList = (params) => get("/user/list?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"), params);
 export const getRolesName = (params) => get("/role/rolesname?user="+ sessionStorage.getItem("user") +"&token=" + sessionStorage.getItem("token"), params);
 export const getUserPerms = (params) => get("/role/userperms?user="+ sessionStorage.getItem("user") +"&token="+ sessionStorage.getItem("token"), params);

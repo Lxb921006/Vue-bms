@@ -110,7 +110,7 @@
                     <el-table-column prop="project" label="项目"></el-table-column>
                     <el-table-column prop="ip" label="服务器"></el-table-column>
                     
-                    <el-table-column prop="start" label="添加时间">
+                    <el-table-column prop="start" label="添加/修改时间">
                         <template slot-scope="scope">
                             <i class="el-icon-time"></i>
                             <span style="margin-left: 10px">{{ scope.row.start | formatDate }}</span>
@@ -299,7 +299,7 @@
                                     icon="el-icon-info"
                                     icon-color="red"
                                     confirm-button-text='确定'
-                                    @confirm="submitForm('ruleForm', createServer)"
+                                    @confirm="submitForm('ruleForm', editServer)"
                                 >
                         <el-button type="primary" :loading="editLoad" slot="reference">确 定</el-button>
                     </el-popconfirm>
@@ -390,7 +390,7 @@
 <script>
 import { Message, MessageBox } from 'element-ui'
 import { mapState } from 'vuex'
-import { getAssetsList, getProcessStatus, createProcessUpdateRecord, runningProcess, getUpdateList, assetsUpload, createServer, delServer, editServer } from '../../api'
+import { getAssetsList, getProcessStatus, createProgramUpdateRecord, runProgram, getUpdateList, assetsUpload, createServer, delServer, editServer } from '../../api'
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 import baseUrl from "../../utils/baseUrl";
@@ -499,7 +499,7 @@ export default {
     },
     computed: {
         ...mapState({
-            'running': state => state.runningProcess.running,
+            'running': state => state.runProgram.running,
             'permissionList': state => state.addRouters.permissionList,
         }),
     },
@@ -809,12 +809,16 @@ export default {
                     }
                     break
             }
+
+            // 先提交执行程序任务(后端异步执行)
+            this.runningJumpOrNot(data_list);
             
-            const resp = await this.createProcessUpdateRecord(data_list);
+            // 提交执行程序任务再创建更新记录
+            const resp = await this.createProgramUpdateRecord(data_list).catch(err => console.log("createProgramUpdateRecord >>>", err));
             if (resp.data.code === 10000) {
                 Message.success(resp.data.message);
-                this.loopRunning();
-                this.runningJumpOrNot(data_list);
+                this.actualTimeGetTaskStatus();
+                
             } else {
                 Message.error(resp.data.message);
             }
@@ -825,16 +829,17 @@ export default {
                 this.submitLoading = false;
             }
         },
-        // 更新列表添加数据
-        async createProcessUpdateRecord(data) {
-            const resp = await createProcessUpdateRecord(JSON.stringify({data_list: data}), this.callMethod).catch((err)=>{;Message.error(err);})
+        // 添加更新记录
+        async createProgramUpdateRecord(data) {
+            const resp = await createProgramUpdateRecord(JSON.stringify({data_list: data}), this.callMethod).catch((err)=>{;Message.error(err);})
             return resp
         },
-        // 实时获取更新状态
-        loopRunning() {
+        // 实时获取任务状态
+        actualTimeGetTaskStatus() {
+            console.log("setInterval num");
             this.timer = setInterval(() => {
                 this.getUpdateList("page", "", 200, false);
-            }, 2000)
+            }, 1000)
         },
         // 是否需要在新的页面打开，实时查看更新脚本的输出内容
         async runningJumpOrNot(data_list) {
@@ -856,7 +861,7 @@ export default {
         },
         // 在当前页面执行
         async currentPageRunning(data) {
-            const resp = await runningProcess({
+            const resp = await runProgram({
                 ip: data.ip,
                 uuid: data.uuid,
                 update_name: this.processName[data.update_name]
@@ -916,7 +921,7 @@ export default {
             this.processName = resp.data.config.select;
 
         },
-        // 更新列表
+        // 更新记录列表
         async getUpdateList(action, status, cancel, isload) {
             // this.tableLoad2 = true;
             if (isload) {
