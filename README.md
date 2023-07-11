@@ -19,6 +19,6 @@ npm run build
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### test
-http://43.138.184.202/login
-account: test
-password: 123abc
+http://43.138.184.202/login  
+account: test  
+password: 123abc  
