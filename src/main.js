@@ -3,9 +3,8 @@ import App from './App.vue'
 import './registerServiceWorker'
 import router from './router'
 import store from './store'
-
-//路由守卫, 访问入口
-import './router/verification'
+//路由守卫, 访问入口, 改放在了router/index.js
+// import './router/verification'
 
 // 第三方插件
 import 'element-ui/lib/theme-chalk/index.css';

@@ -189,19 +189,19 @@ const dynamicRoutes = [
           },
           {
             path:'/assets/process/update/list',
-            name: 'assetsUpdate',
+            name: 'updateList',
             meta: { name: '更新列表'},
             hidden: false,
           },
           {
             path: '/assets/process/update/create',
-            name: 'assetsUpdate',
+            name: 'updateRecord',
             meta: { name: '更新记录' },
             hidden: false,
           },
           {
             path:'/assets/api',
-            name: 'processUpdate',
+            name: 'updateProgram',
             meta: { name: '更新程序1'},
             hidden: false,
           },

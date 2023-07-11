@@ -6,6 +6,7 @@ router.beforeEach((to, from, next) => {
   if (sessionStorage.getItem('token') && sessionStorage.getItem('user') && sessionStorage.getItem('uid')) {
     // 已登录,显示对应用户权限的页面
     if (!store.state.addRouters.permissionList) {
+      console.log("verifition >>> do");
       store.dispatch("getUserPerms").then(() => {
         next(to.path)
       });

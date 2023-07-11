@@ -85,13 +85,11 @@ export default {
                         }, 
                     });
             } else {
-                
                 sessionStorage.setItem("token", resp.data.data.token);
                 sessionStorage.setItem("user", resp.data.data.name);
                 sessionStorage.setItem("uid", resp.data.data.uid);
                 this.$router.replace('/').catch((err) => err);
             }
-            
             
             this.logintext = "登录"
             this.loginLoad = false;

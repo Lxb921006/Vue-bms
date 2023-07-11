@@ -35,6 +35,7 @@
 
 <script>
 import { gaLogin } from '../../api'
+import store from '../../store/index'
 import VueQr from 'vue-qr'
 import { Message } from 'element-ui'
 
@@ -74,7 +75,11 @@ export default {
             sessionStorage.setItem("token", resp.data.data.token);
             sessionStorage.setItem("user", resp.data.data.name);
             sessionStorage.setItem("uid", resp.data.data.uid);
-            this.$router.replace('/').catch((err) => err);
+            // this.$router.replace('/').catch((err) => err);
+            // 登录成功后拉取当前用户的权限列表
+            // await store.dispatch("getUserPerms");
+            // 跳转到主页
+            this.$router.push({ name: 'home' }).catch((err) => err);
             this.submitLoad = false;
             this.logintext = "确定";
         },

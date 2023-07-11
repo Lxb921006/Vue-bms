@@ -56,7 +56,7 @@
                         <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item icon="el-icon-user" @click.native="userCenterActive('user')">个人中心</el-dropdown-item>
                             <el-dropdown-item icon="el-icon-key" @click.native="userCenterActive('pwd')">密码修改</el-dropdown-item>
-                            <el-dropdown-item icon="el-icon-lock" @click.native="logout">退出</el-dropdown-item>
+                            <el-dropdown-item icon="el-icon-lock" @click.native="logout()">退出</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
                 </el-header>
@@ -140,7 +140,7 @@ export default {
             sessionStorage.clear();
             store.commit('CLEAR_PERMISSION', null);
             location.reload();
-            this.$router.replace('/login').catch((err) => err);
+            // this.$router.replace('/login').catch((err) => err);
         },
         addTabs (title, path) {
             let data = {title, path};

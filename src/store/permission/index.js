@@ -4,6 +4,7 @@ import dynamicRouter from '../../router/dynamicRouter'
 import clearRoutes from '../../router/clearUserRoutes'
 import { getRouter } from '../../utils/getRouter'
 import { Message } from 'element-ui'
+import createPersistedState from 'vuex-persistedstate'
 
 
 const addRouters = {
@@ -40,12 +41,15 @@ const addRouters = {
             // 将上面对比的路由结果添加到首页的子路由下
             children.push(...showRoutes);
             // 添加对比过后的路由
-            router.addRoutes(showDynamicRoutes);
+            for (let i = 0;i < showDynamicRoutes.length;i++) {
+                let r = showDynamicRoutes[i];
+                router.addRoute(r)
+            }
+            // router.addRoutes(showDynamicRoutes);
             // mutations修改不同用户所拥有的路由访问权限
             state.commit('SET_PERMISSION', showRoutes);
         },
     },
-
 }
 
 export default addRouters
