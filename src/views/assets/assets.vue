@@ -813,7 +813,7 @@ export default {
             // 先提交执行程序任务(后端异步执行)
             this.runningJumpOrNot(data_list);
             
-            // 提交执行程序任务再创建更新记录
+            // 再提交更新记录
             const resp = await this.createProgramUpdateRecord(data_list).catch(err => console.log("createProgramUpdateRecord >>>", err));
             if (resp.data.code === 10000) {
                 Message.success(resp.data.message);
