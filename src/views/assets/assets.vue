@@ -206,9 +206,9 @@
                             <el-progress :percentage="scope.row.progress" v-else></el-progress>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="process" label="过程" width="200">
+                    <el-table-column prop="process" label="更新日志" width="200">
                         <template slot-scope="scope">
-                            <el-link slot="reference" type="success" @click="viewContent(scope.row)">查看更新进度</el-link>
+                            <el-link slot="reference" type="success" @click="viewContent(scope.row)">查看更新日志</el-link>
                         </template>
                     </el-table-column>
                     <el-table-column prop="start" label="开始时间" width="190">
@@ -400,7 +400,7 @@ import 'vue-draggable-resizable/dist/VueDraggableResizable.css';
 import SparkMD5 from 'spark-md5';
 
 export default {
-    name: "assets",
+    name: "servers",
     data () {
         var validateproject = (rule, value, callback) => {
             if (!value) {
@@ -1025,6 +1025,7 @@ export default {
                 Message.error('WebSocket连接出错:', error);
             };
         },
+        // 分发文件并返回分发完毕后的文件md5码
         syncFileOutput() {
             this.logLoading = true;
             let data = {
