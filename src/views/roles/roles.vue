@@ -479,6 +479,9 @@ export default {
     margin-left: 49px;
     background-color: #f9f9f9;
 }
+:deep .el-dialog--center {
+    cursor: move;
+}
 :deep .el-dialog__header {
     background-color: rgb(48, 65, 86);
     padding: 16px 20px 16px;

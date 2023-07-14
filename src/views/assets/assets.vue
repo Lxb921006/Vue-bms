@@ -1297,6 +1297,9 @@ export default {
     // height: 50px !important;
     background-color: #f9f9f9;
 }
+:deep .el-dialog--center {
+    cursor: move;
+}
 :deep .el-dialog--center .el-dialog__footer {
     background-color: #f9f9f9;
 }
