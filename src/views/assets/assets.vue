@@ -249,9 +249,10 @@
             <el-dialog
                 title="添加服务器"
                 :visible.sync="createVisible"
+                :close-on-click-modal="false"
                 center
                 width="600px" 
-                
+                v-draggable
                 >
                 <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm fix-form-css">
                     <el-form-item label="项目名" prop="project">
@@ -277,10 +278,11 @@
         <div class="edit">
             <el-dialog
                 title="修改服务器"
+                :close-on-click-modal="false"
                 :visible.sync="editVisible"
                 center
                 width="600px" 
-                
+                v-draggable
                 >
                 <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm fix-form-css">
                     <el-form-item label="id" prop="selectId">
@@ -311,7 +313,9 @@
             <el-dialog
                 title="脚本输出"
                 :visible.sync="resultVisible"
-                width="50%"
+                v-draggable
+                :close-on-click-modal="false"
+                width="800px"
                 center
                 >
                 <div class="result-title">
@@ -352,8 +356,10 @@
             <el-dialog
                 title="文件同步"
                 :visible.sync="syncFileVisible"
-                width="50%"
+                :close-on-click-modal="false"
+                width="800px"
                 center
+                v-draggable
                 >
                 <div class="result-title">
                     <el-card v-loading="syncFileLoading"
@@ -395,12 +401,57 @@ import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 import baseUrl from "../../utils/baseUrl";
 import wssUrl from "../../utils/wssUrl";
-import VueDraggableResizable from 'vue-draggable-resizable'
 import 'vue-draggable-resizable/dist/VueDraggableResizable.css';
 import SparkMD5 from 'spark-md5';
+// import draggable from 'vuedraggable'
+// import { VueDraggableResizable } from 'vue-draggable-resizable'
 
 export default {
     name: "servers",
+    directives: {
+        draggable: {
+            bind(el, binding, vnode) {
+                el.style.position = 'fixed';
+                el.style.zIndex = 1000;
+
+                el.dragging = false;
+                el.startX = 0;
+                el.startY = 0;
+                el.left = 0;
+                el.top = 0;
+
+                el.addEventListener('mousedown', function (event) {
+                    el.dragging = true;
+                    el.startX = event.clientX;
+                    el.startY = event.clientY;
+
+                    const rect = el.getBoundingClientRect();
+                    el.left = rect.left;
+                    el.top = rect.top;
+
+                    document.addEventListener('mousemove', mouseMove);
+                    document.addEventListener('mouseup', mouseUp);
+                });
+
+                function mouseMove(event) {
+                    if (el.dragging) {
+                        const left = event.clientX - el.startX + el.left;
+                        const top = event.clientY - el.startY + el.top;
+                        el.style.left = `${left}px`;
+                        el.style.top = `${top}px`;
+                    }
+                }
+
+                function mouseUp() {
+                    if (el.dragging) {
+                        el.dragging = false;
+                        document.removeEventListener('mousemove', mouseMove);
+                        document.removeEventListener('mouseup', mouseUp);
+                    }
+                }
+            },
+        },
+    },
     data () {
         var validateproject = (rule, value, callback) => {
             if (!value) {
@@ -494,7 +545,14 @@ export default {
                 curPage:1,
                 pageSize:5,
             },
-            
+            dragDialog: {
+                // 记录拖拽的位置
+                startX: 0,
+                startY: 0,
+                left: 0,
+                top: 0,
+                dragging: false,
+            },
         }
     },
     computed: {
@@ -507,6 +565,54 @@ export default {
         // VueDraggableResizable
     },
     methods: {
+        dialogDrag(event) {
+            if (!this.dragDialog.dragging) {
+                return;
+            }
+            // 计算拖拽距离
+            const left = event.clientX - this.dragDialog.startX + this.dragDialog.left;
+            const top = event.clientY - this.dragDialog.startY + this.dragDialog.top;
+            // 更新对话框位置
+            this.$refs.dialog.$el.style.left = `${left}px`;
+            this.$refs.dialog.$el.style.top = `${top}px`;
+            },
+            dialogMouseDown(event) {
+            // 开始拖拽
+            this.dragDialog.dragging = true;
+            // 记录起始位置
+            this.dragDialog.startX = event.clientX;
+            this.dragDialog.startY = event.clientY;
+            // 记录当前位置
+            const { left, top } = this.$refs.dialog.$el.getBoundingClientRect();
+            this.dragDialog.left = left;
+            this.dragDialog.top = top;
+            // 添加事件监听器
+            document.addEventListener('mousemove', this.dialogDrag);
+            document.addEventListener('mouseup', this.dialogMouseUp);
+            },
+            dialogMouseUp() {
+            // 结束拖拽
+            this.dragDialog.dragging = false;
+            // 移除事件监听器
+            document.removeEventListener('mousemove', this.dialogDrag);
+            document.removeEventListener('mouseup', this.dialogMouseUp);
+        },
+        onDragEnd(event) {  
+            // 获取对话框的当前位置和鼠标位置  
+            
+            const dialogRect = this.$refs.dialog.getBoundingClientRect();  
+            const mouseX = event.clientX;  
+            const mouseY = event.clientY;  
+            console.log(dialogRect);
+                
+            // 计算对话框应该移动到的位置  
+            const newLeft = mouseX - (dialogRect.width - this.$refs.dialog.offsetWidth) / 2;  
+            const newTop = mouseY - (dialogRect.height - this.$refs.dialog.offsetHeight) / 2;  
+                
+            // 移动对话框到计算得到的位置  
+            this.$refs.dialog.style.left = `${newLeft}px`;  
+            this.$refs.dialog.style.top = `${newTop}px`;  
+        },
         tableRowClick(row, column, event) {
             this.$refs.multipleTable.toggleRowSelection(row);
         },
