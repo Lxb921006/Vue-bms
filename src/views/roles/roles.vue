@@ -475,10 +475,32 @@ export default {
     margin: 0 auto;
     text-align: center;
 }
+// ::-webkit-scrollbar {
+//   display: none;
+// }
 :deep .el-tree {
+    height: 550px;
+    overflow-y: auto;
     margin-left: 49px;
     background-color: #f9f9f9;
 }
+.el-tree::-webkit-scrollbar {
+  width: 6px!important; /* 设置滚动条宽度 */
+}
+
+.el-tree::-webkit-scrollbar-track {
+  background-color: #f9f9f9!important; /* 设置滚动条背景颜色 */
+}
+
+.el-tree::-webkit-scrollbar-thumb {
+  background-color: #cecece!important; /* 设置滚动条滑块颜色 */
+  border-radius: 5px; /* 设置滑块的圆角 */
+}
+
+.el-tree::-webkit-scrollbar-thumb:hover {
+  background-color: #bdbdbd!important; /* 设置滚动条滑块悬停时的颜色 */
+}
+
 :deep .el-dialog--center {
     cursor: move;
 }

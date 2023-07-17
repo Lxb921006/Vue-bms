@@ -323,6 +323,22 @@ text-align: left;
     overflow: hidden;
     overflow-y: auto;
 }
+.el-main::-webkit-scrollbar {
+  width: 10px!important; /* 设置滚动条宽度 */
+}
+
+.el-main::-webkit-scrollbar-track {
+  background-color: #f9f9f9!important; /* 设置滚动条背景颜色 */
+}
+
+.el-main::-webkit-scrollbar-thumb {
+  background-color: #cecece!important; /* 设置滚动条滑块颜色 */
+  border-radius: 5px; /* 设置滑块的圆角 */
+}
+
+.el-main::-webkit-scrollbar-thumb:hover {
+  background-color: #bdbdbd!important; /* 设置滚动条滑块悬停时的颜色 */
+}
 body > .el-container {
     margin-bottom: 40px;
 }
