@@ -408,6 +408,7 @@ import SparkMD5 from 'spark-md5';
 
 export default {
     name: "servers",
+    // 拖拽
     directives: {
         draggable: {
             bind(el, binding, vnode) {
