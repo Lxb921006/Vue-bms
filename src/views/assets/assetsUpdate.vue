@@ -116,6 +116,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/assetsUpdate.css';
+</style> -->
+
 <style lang="scss" scoped>
 .result-data {
     margin-top: 20px;

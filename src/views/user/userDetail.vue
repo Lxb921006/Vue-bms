@@ -46,6 +46,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/userDetail.css';
+</style> -->
+
 <style lang="scss" scoped>
 .box {
     height: 342px;

@@ -648,6 +648,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/user.css';
+</style> -->
+
 <style lang="scss" scoped>
 .box{
 
@@ -706,9 +710,4 @@ export default {
 :deep .el-table tr {
     cursor: pointer;
 }
-// .col-5 {
-//     position: relative;
-//     width: 42px;
-//     right: 41px;
-// }
 </style>

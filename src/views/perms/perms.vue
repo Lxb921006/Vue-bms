@@ -304,6 +304,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/perms.css';
+</style> -->
+
 <style lang="scss" scoped>
 .box{
     margin: 10px auto;

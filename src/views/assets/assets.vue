@@ -577,7 +577,7 @@ export default {
             this.$refs.dialog.$el.style.left = `${left}px`;
             this.$refs.dialog.$el.style.top = `${top}px`;
             },
-            dialogMouseDown(event) {
+        dialogMouseDown(event) {
             // 开始拖拽
             this.dragDialog.dragging = true;
             // 记录起始位置
@@ -590,8 +590,8 @@ export default {
             // 添加事件监听器
             document.addEventListener('mousemove', this.dialogDrag);
             document.addEventListener('mouseup', this.dialogMouseUp);
-            },
-            dialogMouseUp() {
+        },
+        dialogMouseUp() {
             // 结束拖拽
             this.dragDialog.dragging = false;
             // 移除事件监听器
@@ -652,7 +652,7 @@ export default {
             if (resp.data.code !== 10000) {
                 Message.error(resp.data.message)
             } else {
-                this.getAssetsList();
+                this.getAssetsList("page");
                 Message.success(resp.data.message)
             }
         },
@@ -1210,6 +1210,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/assets.css';
+</style> -->
+
 <style lang="scss" scoped>
 .box {
     // padding: 15px;
@@ -1320,3 +1324,4 @@ export default {
     cursor: pointer;
 }
 </style>
+

@@ -274,6 +274,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/home.css';
+</style> -->
+
 <style lang="scss" scoped>
 .box {
     height: 100%;

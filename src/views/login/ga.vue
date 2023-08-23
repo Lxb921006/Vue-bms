@@ -95,6 +95,10 @@ export default {
     },
 }
 </script>
+<!-- 
+<style lang="scss" scoped>
+    @import '../../../public/style/ga.css';
+</style> -->
 
 <style lang="scss" scoped>
 .box {

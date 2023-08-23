@@ -416,6 +416,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/roles.css';
+</style> -->
+
 <style lang="scss" scoped>
 .box{
     margin: 10px auto;
@@ -528,4 +532,4 @@ export default {
 :deep .el-table tr {
     cursor: pointer;
 }
-</style>>
+</style>

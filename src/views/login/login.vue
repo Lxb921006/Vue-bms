@@ -113,6 +113,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/login.css';
+</style> -->
+
 <style lang="scss" scoped>
 .login {
     height: 100%;
@@ -126,15 +130,16 @@ export default {
 .demo-ruleForm {
     margin: auto;
 }
-::v-deep .el-input input {
+:deep .el-input input {
     background-color: #283443;
     border: 1px solid rgba(0,0,0,.1)
 }
-::v-deep .el-form-item__content {
+:deep .el-form-item__content {
     margin: 0 auto !important;
     width: 450px;
 }
-::v-deep .el-button+.el-button, .el-checkbox.is-bordered+.el-checkbox.is-bordered {
+:deep .el-button+.el-button, .el-checkbox.is-bordered+.el-checkbox.is-bordered {
     margin-left: 30px;
 }
 </style>
+

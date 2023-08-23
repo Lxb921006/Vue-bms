@@ -7,5 +7,7 @@ module.exports = {
             maskIcon: 'favicon.ico',
             msTileImage: 'favicon.ico'
         }
-    }
+    },
+    // 不加下面这个参数编译打包会报错
+    parallel: false,
 }

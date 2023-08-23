@@ -31,6 +31,10 @@ export default {
 }
 </script>
 
+<!-- 
+<style lang="scss" scoped>
+    @import '../../../public/style/userCenter.css';
+</style> -->
 
 <style>
 :deep .boxc {
