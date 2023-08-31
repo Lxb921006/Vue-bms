@@ -576,7 +576,7 @@ export default {
             // 更新对话框位置
             this.$refs.dialog.$el.style.left = `${left}px`;
             this.$refs.dialog.$el.style.top = `${top}px`;
-            },
+        },
         dialogMouseDown(event) {
             // 开始拖拽
             this.dragDialog.dragging = true;
