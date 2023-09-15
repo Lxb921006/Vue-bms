@@ -12,6 +12,11 @@
 4.服务器管理(批量更新程序如jar等, 实时查看更新进度, 实时查看更新日志, 批量分发文件并返回md5校验, 上百台服务器规范管理毫无压力)[点击直达代码片段](https://github.com/Lxb921006/Vue-bms/tree/dev/src/views/assets)  
 5.操作日志  
 
+# 部分ui展示
+![user](user.png)  
+![perms](perms.png)  
+![servers](servers.png)  
+
 # 演示地址
 http://43.156.170.122/login  
 account: test  
