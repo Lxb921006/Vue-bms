@@ -10,8 +10,8 @@
                     :router="true"
                     :collapse="isCollapse"
                     :collapse-transition="true"
-                    background-color="#304156"
-                    text-color="rgb(191, 203, 217)"
+                    background-color="#1f211f"
+                    text-color="#fff"
                     active-text-color="#ffd04b">
                     <el-menu-item index="/" @click.native="TabsHome('/')">
                         <i class="el-icon-s-home"></i>
