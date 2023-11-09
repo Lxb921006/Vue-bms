@@ -17,6 +17,7 @@
                             :on-error="handleError"
                             :on-exceed="handleExceed"
                             :file-list="fileList"
+                            :before-upload="beforeUpload"
                             multiple
                             :auto-upload="false">
                             <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
@@ -369,7 +370,7 @@
                         <p class="op-name">
                             <el-row :gutter="10">
                                 <el-col :span="1.9">
-                                    <el-link effect="plain" :underline="false" type="success">{{ fileNameList.join(', ') }}</el-link>
+                                    <el-link effect="plain" :underline="false" type="success">{{ fileNameList.join('\n') }}</el-link>
                                 </el-col>
                             </el-row>
                         </p>
@@ -403,6 +404,7 @@ import baseUrl from "../../utils/baseUrl";
 import wssUrl from "../../utils/wssUrl";
 import 'vue-draggable-resizable/dist/VueDraggableResizable.css';
 import SparkMD5 from 'spark-md5';
+import md5 from 'blueimp-md5';
 // import draggable from 'vuedraggable'
 // import { VueDraggableResizable } from 'vue-draggable-resizable'
 
@@ -741,13 +743,14 @@ export default {
             return `${baseUrl}/assets/upload`
         },
         // 显示文件MD5码
-        showFileMd5(resp) {
+        showFileMd5() {
             let fl = this.$refs.upload.uploadFiles;
             let n = "";
             let o = "";
             fl.forEach((file)=>{
                 let blob = new Blob([file.raw], { type: file.type });
                 let reader = new FileReader();
+                console.log("reader >>> ", reader);
                 reader.onload = (event) => {
                     let arrayBuffer = event.target.result
                     let md5 = SparkMD5.ArrayBuffer.hash(arrayBuffer);
@@ -758,6 +761,7 @@ export default {
                 }
                 reader.readAsArrayBuffer(blob);
             })
+            
         },
         // 文件MD5
         getFileMd5() {
@@ -785,6 +789,8 @@ export default {
 
             this.uploadLoading = true;
 
+            this.beforeUpload();
+
             let formData = new FormData();
             this.fileList.forEach(file=>{
                 formData.append('file', file.raw);
@@ -794,10 +800,9 @@ export default {
                 formData.append('ips', item.ip)
             });
 
-            const resp = await assetsUpload(formData, this.callMethod);
+            const resp = await assetsUpload(formData, this.callMethod).catch(err => {console.log("assetsUpload err >>>", err)});
             if (resp.data.code === 10000) {
                 this.uploadLoading = false;
-                this.showFileMd5(resp.data.data);
                 this.fileList.forEach(file=>{
                     this.handleSuccess(resp, file);
                 })
@@ -806,6 +811,26 @@ export default {
             } else {
                 Message.error(resp.data.message);
             }
+        },
+        beforeUpload() {
+            this.fileNameList = [];
+            let files = this.fileList;
+            let o,n = "";
+            for (let i=0; i < files.length; i++) {
+                const fileReader = new FileReader();
+                fileReader.onload = (e) => {
+                    const fileData = e.target.result;
+                    const filemd5 = SparkMD5.ArrayBuffer.hash(fileData);
+                    o = files[i].name;
+                    n = o + " " + " " + "md5: " + filemd5;
+                    this.fileNameList.push(n);
+                };
+                fileReader.onerror = (e) => {
+                    reject(e);
+                };
+                fileReader.readAsArrayBuffer(files[i].raw);
+            }
+            
         },
         handleRemove(file, fileList) {
             console.log(file, fileList);
@@ -1153,6 +1178,7 @@ export default {
             this.ws.onclose = () => {
                 console.log('WebSocket连接已关闭');
                 this.syncFileLoading = false;
+                this.fileList = [];
                 Message.success("同步完成");
             };
             this.ws.onerror = (error) => {
@@ -1322,6 +1348,9 @@ export default {
 }
 :deep .el-table tr {
     cursor: pointer;
+}
+:deep .el-link--inner {
+    white-space: break-spaces;
 }
 </style>
 
