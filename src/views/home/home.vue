@@ -357,6 +357,11 @@ body > .el-container {
   line-height: 60px;
   padding: 0 20px;
 }
+:deep .el-tabs__item.is-active {
+  background-color: #42b983;
+  border-color: #42b983;
+  color: #fff;
+}
 .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: 200px;
     min-height: 400px;
