@@ -51,7 +51,7 @@
             <!-- 数据表格 -->
             <div class="table">
                 <el-table v-loading="tableLoad" stripe  :data="userList" @selection-change="handleSelectionChange"
-                    element-loading-text="拼命加载中"
+                    element-loading-text="拼命加载中" ref="multipleTable" @row-click="tableRowClick"
                 >
                     <el-table-column type="selection" width="55"></el-table-column>
                     <el-table-column prop="ID" label="id"></el-table-column>
@@ -101,7 +101,7 @@
                     @current-change="handleCurrentChange"
                     :current-page.sync="pages.curPage"
                     :page-size="pages.pageSize"
-                    layout="prev, pager, next, total"
+                    layout="prev, pager, next, total, jumper"
                     :total="total"
                 >
                 </el-pagination>
@@ -113,6 +113,7 @@
             :visible.sync="centerDialogVisible"
             width="500px"
             :close-on-click-modal="false"
+            v-draggable
             center
             >
             <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
@@ -174,6 +175,7 @@
             :visible.sync="editDialogVisible"
             width="500px"
             :close-on-click-modal="false"
+            v-draggable
             center
             >
             <el-form :model="ruleForm" status-icon label-position="right" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
@@ -234,6 +236,50 @@ import { mapState } from 'vuex'
 
 export default {
     name: "user",
+    directives: {
+        draggable: {
+            bind(el, binding, vnode) {
+                el.style.position = 'fixed';
+                el.style.zIndex = 1000;
+
+                el.dragging = false;
+                el.startX = 0;
+                el.startY = 0;
+                el.left = 0;
+                el.top = 0;
+
+                el.addEventListener('mousedown', function (event) {
+                    el.dragging = true;
+                    el.startX = event.clientX;
+                    el.startY = event.clientY;
+
+                    const rect = el.getBoundingClientRect();
+                    el.left = rect.left;
+                    el.top = rect.top;
+
+                    document.addEventListener('mousemove', mouseMove);
+                    document.addEventListener('mouseup', mouseUp);
+                });
+
+                function mouseMove(event) {
+                    if (el.dragging) {
+                        const left = event.clientX - el.startX + el.left;
+                        const top = event.clientY - el.startY + el.top;
+                        el.style.left = `${left}px`;
+                        el.style.top = `${top}px`;
+                    }
+                }
+
+                function mouseUp() {
+                    if (el.dragging) {
+                        el.dragging = false;
+                        document.removeEventListener('mousemove', mouseMove);
+                        document.removeEventListener('mouseup', mouseUp);
+                    }
+                }
+            },
+        },
+    },
     data() {
         var validatename = (rule, value, callback) => {
             if (!value) {
@@ -375,14 +421,19 @@ export default {
         })
     },
     methods:{
-        async ListUser(model) {
+        tableRowClick(row, column, event) {
+            this.$refs.multipleTable.toggleRowSelection(row);
+        },
+        async ListUser(mode) {
+            this.tableLoad = true;
             var pageNum = 0;
-            switch (model) {
+            switch (mode) {
                 case "page":
                     pageNum = this.pages.curPage;
                     break
                 case "search":
-                    pageNum = 1
+                    pageNum = 1;
+                    break
             }
             const resp = await getUserList(
                 {
@@ -400,6 +451,8 @@ export default {
                 this.tableLoad = false;
                 return Message.error(resp.data.message);
             }
+
+            this.pages.curPage = pageNum;
 
             this.userList = resp.data.data; //用户列表
             this.total = resp.data.total; //用户总数
@@ -595,6 +648,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/user.css';
+</style> -->
+
 <style lang="scss" scoped>
 .box{
 
@@ -644,12 +701,13 @@ export default {
     // height: 351px !important;
     background-color: #f9f9f9;
 }
+:deep .el-dialog--center {
+    cursor: move;
+}
 :deep .el-dialog--center .el-dialog__footer {
     background-color: #f9f9f9;
 }
-// .col-5 {
-//     position: relative;
-//     width: 42px;
-//     right: 41px;
-// }
+:deep .el-table tr {
+    cursor: pointer;
+}
 </style>

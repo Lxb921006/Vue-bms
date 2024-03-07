@@ -1,7 +1,7 @@
 <template>
     <div class="box">
         <el-container class="home" v-loading="permsLoad">
-            <el-aside :width="isCollapse ? '65px' : '200px'">
+            <el-aside >
                 <el-menu
                     :default-active="editableTabsValue"
                     class="el-menu-vertical-demo"
@@ -9,9 +9,9 @@
                     @close="handleClose"
                     :router="true"
                     :collapse="isCollapse"
-                    :collapse-transition="false"
-                    background-color="#304156"
-                    text-color="rgb(191, 203, 217)"
+                    :collapse-transition="true"
+                    background-color="#1f211f"
+                    text-color="#fff"
                     active-text-color="#ffd04b">
                     <el-menu-item index="/" @click.native="TabsHome('/')">
                         <i class="el-icon-s-home"></i>
@@ -56,7 +56,7 @@
                         <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item icon="el-icon-user" @click.native="userCenterActive('user')">个人中心</el-dropdown-item>
                             <el-dropdown-item icon="el-icon-key" @click.native="userCenterActive('pwd')">密码修改</el-dropdown-item>
-                            <el-dropdown-item icon="el-icon-lock" @click.native="logout">退出</el-dropdown-item>
+                            <el-dropdown-item icon="el-icon-lock" @click.native="logout()">退出</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
                 </el-header>
@@ -88,6 +88,8 @@
             width="800px"
             center
             ref="dia"
+            :close-on-click-modal="false"
+            v-draggable
             @close="handlediaclose"
             >
             <!-- 用户详情及密码修改 -->
@@ -105,9 +107,53 @@ import  userCenter  from '../user/userCenter'
 
 export default {
     name:"home",
+    directives: {
+        draggable: {
+            bind(el, binding, vnode) {
+                el.style.position = 'fixed';
+                el.style.zIndex = 1000;
+
+                el.dragging = false;
+                el.startX = 0;
+                el.startY = 0;
+                el.left = 0;
+                el.top = 0;
+
+                el.addEventListener('mousedown', function (event) {
+                    el.dragging = true;
+                    el.startX = event.clientX;
+                    el.startY = event.clientY;
+
+                    const rect = el.getBoundingClientRect();
+                    el.left = rect.left;
+                    el.top = rect.top;
+
+                    document.addEventListener('mousemove', mouseMove);
+                    document.addEventListener('mouseup', mouseUp);
+                });
+
+                function mouseMove(event) {
+                    if (el.dragging) {
+                        const left = event.clientX - el.startX + el.left;
+                        const top = event.clientY - el.startY + el.top;
+                        el.style.left = `${left}px`;
+                        el.style.top = `${top}px`;
+                    }
+                }
+
+                function mouseUp() {
+                    if (el.dragging) {
+                        el.dragging = false;
+                        document.removeEventListener('mousemove', mouseMove);
+                        document.removeEventListener('mouseup', mouseUp);
+                    }
+                }
+            },
+        },
+    },
     data () {
         return {
-            isCollapse: false,
+            isCollapse: true,
             userCenterDialogVisible: false,
             pwdDialogVisible: false,
             editableTabs: [],
@@ -124,6 +170,7 @@ export default {
         ...mapState({
             'permissionList': state => state.addRouters.permissionList,
             'permsLoad': state => state.addRouters.permsLoad,
+            'menuList': state => state.menuTabs.menuTabList,
         })
     },
     watch: {
@@ -139,7 +186,7 @@ export default {
             sessionStorage.clear();
             store.commit('CLEAR_PERMISSION', null);
             location.reload();
-            this.$router.replace('/login').catch((err) => err);
+            // this.$router.replace('/login').catch((err) => err);
         },
         addTabs (title, path) {
             let data = {title, path};
@@ -148,6 +195,7 @@ export default {
                 this.editableTabs.push(data);
             }
             this.editableTabsValue = data.path;
+            store.commit('UPDATE_TABS', this.editableTabs);
         },
         removeTab (targetName) {
             let tabs = this.editableTabs;
@@ -168,7 +216,9 @@ export default {
             this.editableTabs = tabs.filter(tab => tab.path !== targetName);
             this.$router.replace(this.editableTabsValue,
                 onComplete => {},
-                onAbort => {});
+                onAbort => {}
+            );
+            store.commit('UPDATE_TABS', this.editableTabs);
         },
         tabChange(tab) {
             this.$router.replace(tab.name,
@@ -210,11 +260,23 @@ export default {
                 path: this.$route.path
             });
         }
-        this.editableTabsValue = this.$route.path;
+        let tl = window.sessionStorage.getItem('menuTabList');
+        //this.editableTabsValue = this.$route.path;
+        if (tl && tl.length > 0) {
+            this.editableTabs = JSON.parse(tl);
+            this.editableTabsValue = this.$route.path;
+        } else {
+            this.editableTabsValue = this.$route.path;
+        }
+        
         this.user = window.sessionStorage.getItem('user');
     },
 }
 </script>
+
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/home.css';
+</style> -->
 
 <style lang="scss" scoped>
 .box {
@@ -258,11 +320,28 @@ text-align: left;
   text-align: left;
   overflow-y: auto;
   overflow-x: hidden;
+  width: auto!important;
 }
 
 .el-main {
     overflow: hidden;
     overflow-y: auto;
+}
+.el-main::-webkit-scrollbar {
+  width: 10px!important; /* 设置滚动条宽度 */
+}
+
+.el-main::-webkit-scrollbar-track {
+  background-color: #f9f9f9!important; /* 设置滚动条背景颜色 */
+}
+
+.el-main::-webkit-scrollbar-thumb {
+  background-color: #cecece!important; /* 设置滚动条滑块颜色 */
+  border-radius: 5px; /* 设置滑块的圆角 */
+}
+
+.el-main::-webkit-scrollbar-thumb:hover {
+  background-color: #bdbdbd!important; /* 设置滚动条滑块悬停时的颜色 */
 }
 body > .el-container {
     margin-bottom: 40px;
@@ -277,6 +356,11 @@ body > .el-container {
 :deep .el-breadcrumb {
   line-height: 60px;
   padding: 0 20px;
+}
+:deep .el-tabs__item.is-active {
+  background-color: #42b983;
+  border-color: #42b983;
+  color: #fff;
 }
 .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: 200px;
@@ -306,6 +390,9 @@ body > .el-container {
   float: right;
   margin: 0 10px;
   font-size: 16px;
+}
+:deep .el-dialog--center {
+    cursor: move;
 }
 :deep .el-dialog__header {
     background-color: rgb(48, 65, 86);

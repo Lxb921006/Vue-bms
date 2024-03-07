@@ -7,6 +7,9 @@
                         <p class="op-name">
                             <el-row :gutter="10">
                                 <el-col :span="1.9" >
+                                    <el-tag effect="plain"  type="success">{{ project }}</el-tag>
+                                </el-col>
+                                <el-col :span="1.9" >
                                     <el-tag effect="plain"  type="success">{{ ip }}</el-tag>
                                 </el-col>
                                 <el-col :span="1.9" >
@@ -18,7 +21,7 @@
                 </div>
                 <div class="result-data">
                     <el-card class="layout-no" v-loading="updateLoading"
-                            element-loading-text="拼命更新中"
+                            element-loading-text="正在拼命连接中..."
                             element-loading-spinner="el-icon-loading">
                         <el-divider><strong><i class="el-icon-platform-eleme"></i>实时更新日志</strong></el-divider>
                         <div class="format-code">
@@ -40,41 +43,33 @@ export default {
     name: "assetsUpdate",
     data () {
         return {
-            updateLoading: false,
+            updateLoading: true,
             curName: "",
             content: [],
-            ip: "",
+            uuid: "",
+            project:"",    
+            ip: "",    
+            socket:"",
         }
     },
-    // computed: {
-    //     ...mapState({
-    //         'running': state => state.runningProcess.running,
-    //     })
-    // },
     methods: {
-        print() {
-            for(let i = 0; i < 100; i++){
-                setTimeout(() => {
-                    this.content.push("this is test data!!\n")
-                }, 500);
-                let div = document.querySelector(".result-data");
-                div.scrollTop = div.scrollHeight - div.clientHeight;
-            }
-            let old = this.$store.state.runningProcess.running;
-            let data = old.filter(tab => tab.name != this.curName);
-            store.commit("REMOVE_PROCESS", data);
-        },
         wsInit () {
             if (typeof(WebSocket) === "undefined") {
                 Message.error("您的浏览器不支持socket");
             } else {
                 // 实例化socket
-                this.wsUrl = `ws://${wssUrl.replace(/http:\/\//, '')}/ws/process/`;
-                this.socket = new WebSocket(this.wsUrl);
+                this.wsUrl = wssUrl;
+                this.socket = new WebSocket(this.wsUrl+"/assets/ws?user="+ sessionStorage.getItem("user") +"&token="+sessionStorage.getItem("token"));
                 // 监听socket连接
                 this.socket.onopen = this.open;
                 // 监听socket错误信息
-                this.socket.onerror = this.error;
+                try {
+                    this.socket.onerror = this.error;
+                } catch(err) {
+                    console.log(err);
+                    return
+                }
+                console.log(111);
                 // 监听socket消息
                 this.socket.onmessage = this.getMessage;
                 // 监听socket关闭消息
@@ -83,32 +78,47 @@ export default {
         },
         open () {
             // Message.success('websocket连接成功')
+            this.updateLoading = false;
             this.send();
         },
         error () {
-            Message.error("websocket连接失败");
+            this.updateLoading = false;
+            // Message.error("websocket连接失败");
+            this.content.push("websocket连接失败");
         },
         getMessage (msg) {
-            let jd = JSON.parse(msg.data);
+            // let jd = JSON.parse(msg.data);
+            this.content.push(msg.data);
             let div = document.querySelector(".result-data");
             div.scrollTop = div.scrollHeight - div.clientHeight;
         },
         send () {
             // this.socket.send(this.chatContent+'|'+this.value);
-            this.socket.send(this.chatContent);
+            let data = {
+                ip: this.ip,
+                name: this.curName,
+                uuid: this.uuid
+            };
+            this.socket.send(JSON.stringify(data));
         },
         close () {
-            Message.error("websocket连接已关闭");
+            // Message.error("websocket连接已关闭");
         },
     },
     mounted () {
         this.curName = this.$route.params.name;
         this.ip =  this.$route.params.ip;
-        this.print();
+        this.uuid = this.$route.params.uuid;
+        this.project = this.$route.params.project;
+        this.wsInit();
     },
     
 }
 </script>
+
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/assetsUpdate.css';
+</style> -->
 
 <style lang="scss" scoped>
 .result-data {
@@ -123,7 +133,7 @@ export default {
     margin-top: 16px;
 }
 .format-code {
-    height: 700px;
+    // height: 700px;
     text-align: justify;
     font-size: 17px;
     overflow: auto;

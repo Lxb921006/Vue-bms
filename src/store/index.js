@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import addRouters from './permission'
 import userDetail from './userdetail'
 import runningProcess from './process'
+import menuTabs from './menu'
 // import createPersistedState from 'vuex-persistedstate'
 
 
@@ -21,5 +22,6 @@ export default new Vuex.Store({
     addRouters,
     userDetail,
     runningProcess,
+    menuTabs,
   },
 })

@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import createPersistedState from 'vuex-persistedstate'
 
+// 没有用
 const runningProcess = {
     namespace: true,
     state: {

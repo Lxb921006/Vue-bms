@@ -109,6 +109,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/password.css';
+</style> -->
+
 <style lang="scss" scoped>
 .el-popover__reference-wrapper button  {
     margin-left: 20px;

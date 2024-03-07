@@ -23,7 +23,7 @@
             <!-- 数据表格 -->
             <div class="table">
                 <el-table v-loading="tableLoad" stripe border :data="roleList" :header-cell-style="{background: '#FAFAFA'}"
-                    element-loading-text="拼命加载中" 
+                    element-loading-text="拼命加载中"  ref="multipleTable" @row-click="tableRowClick"
                 >
                 <el-table-column type="expand">
                     <template slot-scope="scope">
@@ -76,7 +76,7 @@
                     @current-change="handleCurrentChange"
                     :current-page.sync="pages.curPage"
                     :page-size="pages.pageSize"
-                    layout="prev, pager, next, total"
+                    layout="prev, pager, next, total, jumper"
                     :total="total"
                 >
                 </el-pagination>
@@ -88,6 +88,7 @@
             :visible.sync="centerDialogVisible"
             width="600px"
             :close-on-click-modal="false"
+            v-draggable
             center
             >
             <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
@@ -113,6 +114,7 @@
             :visible.sync="allotDialogVisible"
             width="600px"
             :close-on-click-modal="false"
+            v-draggable
             center
             >
             <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
@@ -154,6 +156,50 @@ import { Message } from 'element-ui'
 
 export default {
     name: "roles",
+    directives: {
+        draggable: {
+            bind(el, binding, vnode) {
+                el.style.position = 'fixed';
+                el.style.zIndex = 1000;
+
+                el.dragging = false;
+                el.startX = 0;
+                el.startY = 0;
+                el.left = 0;
+                el.top = 0;
+
+                el.addEventListener('mousedown', function (event) {
+                    el.dragging = true;
+                    el.startX = event.clientX;
+                    el.startY = event.clientY;
+
+                    const rect = el.getBoundingClientRect();
+                    el.left = rect.left;
+                    el.top = rect.top;
+
+                    document.addEventListener('mousemove', mouseMove);
+                    document.addEventListener('mouseup', mouseUp);
+                });
+
+                function mouseMove(event) {
+                    if (el.dragging) {
+                        const left = event.clientX - el.startX + el.left;
+                        const top = event.clientY - el.startY + el.top;
+                        el.style.left = `${left}px`;
+                        el.style.top = `${top}px`;
+                    }
+                }
+
+                function mouseUp() {
+                    if (el.dragging) {
+                        el.dragging = false;
+                        document.removeEventListener('mousemove', mouseMove);
+                        document.removeEventListener('mouseup', mouseUp);
+                    }
+                }
+            },
+        },
+    },
     data() {
         var validaterolename = (rule, value, callback) => {
             if (!value) {
@@ -205,7 +251,11 @@ export default {
         })
     },
     methods:{
+        tableRowClick(row, column, event) {
+            this.$refs.multipleTable.toggleRowSelection(row);
+        },
         async RolesList() {
+            this.tableLoad = true;
             const resp = await getRolesList({
                 rolename: this.rolename,
                 page: this.pages.curPage,
@@ -366,6 +416,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/roles.css';
+</style> -->
+
 <style lang="scss" scoped>
 .box{
     margin: 10px auto;
@@ -425,9 +479,34 @@ export default {
     margin: 0 auto;
     text-align: center;
 }
+// ::-webkit-scrollbar {
+//   display: none;
+// }
 :deep .el-tree {
+    height: 550px;
+    overflow-y: auto;
     margin-left: 49px;
     background-color: #f9f9f9;
+}
+.el-tree::-webkit-scrollbar {
+  width: 6px!important; /* 设置滚动条宽度 */
+}
+
+.el-tree::-webkit-scrollbar-track {
+  background-color: #f9f9f9!important; /* 设置滚动条背景颜色 */
+}
+
+.el-tree::-webkit-scrollbar-thumb {
+  background-color: #cecece!important; /* 设置滚动条滑块颜色 */
+  border-radius: 5px; /* 设置滑块的圆角 */
+}
+
+.el-tree::-webkit-scrollbar-thumb:hover {
+  background-color: #bdbdbd!important; /* 设置滚动条滑块悬停时的颜色 */
+}
+
+:deep .el-dialog--center {
+    cursor: move;
 }
 :deep .el-dialog__header {
     background-color: rgb(48, 65, 86);
@@ -450,4 +529,7 @@ export default {
 :deep .el-dialog--center .el-dialog__footer {
     background-color: #f9f9f9;
 }
-</style>>
+:deep .el-table tr {
+    cursor: pointer;
+}
+</style>

@@ -21,7 +21,7 @@
             </div>
             <div class="table">
                 <el-table v-loading="tableLoad" stripe  :data="permsList" @selection-change="handleSelectionChange"
-                        element-loading-text="拼命加载中"
+                        element-loading-text="拼命加载中" ref="multipleTable" @row-click="tableRowClick"
                     >
                     <el-table-column type="selection" width="55"></el-table-column>
                     <el-table-column prop="ID" label="id"></el-table-column>
@@ -42,7 +42,7 @@
                         @current-change="handleCurrentChange"
                         :current-page.sync="pages.curPage"
                         :page-size="pages.pageSize"
-                        layout="prev, pager, next, total"
+                        layout="prev, pager, next, total, jumper"
                         :total="total"
                     >
                     </el-pagination>
@@ -53,6 +53,7 @@
             :visible.sync="centerDialogVisible"
             width="500px"
             :close-on-click-modal="false"
+            v-draggable
             center
             >
             <el-form :model="ruleForm" status-icon label-position="right" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
@@ -91,6 +92,50 @@ import { mapState } from 'vuex'
 
 export default {
     name:"permsList",
+    directives: {
+        draggable: {
+            bind(el, binding, vnode) {
+                el.style.position = 'fixed';
+                el.style.zIndex = 1000;
+
+                el.dragging = false;
+                el.startX = 0;
+                el.startY = 0;
+                el.left = 0;
+                el.top = 0;
+
+                el.addEventListener('mousedown', function (event) {
+                    el.dragging = true;
+                    el.startX = event.clientX;
+                    el.startY = event.clientY;
+
+                    const rect = el.getBoundingClientRect();
+                    el.left = rect.left;
+                    el.top = rect.top;
+
+                    document.addEventListener('mousemove', mouseMove);
+                    document.addEventListener('mouseup', mouseUp);
+                });
+
+                function mouseMove(event) {
+                    if (el.dragging) {
+                        const left = event.clientX - el.startX + el.left;
+                        const top = event.clientY - el.startY + el.top;
+                        el.style.left = `${left}px`;
+                        el.style.top = `${top}px`;
+                    }
+                }
+
+                function mouseUp() {
+                    if (el.dragging) {
+                        el.dragging = false;
+                        document.removeEventListener('mousemove', mouseMove);
+                        document.removeEventListener('mouseup', mouseUp);
+                    }
+                }
+            },
+        },
+    },
     data() {
         var validatepath = (rule, value, callback) => {
             if (!value) {
@@ -150,7 +195,11 @@ export default {
         })
     },
     methods:{
+        tableRowClick(row, column, event) {
+            this.$refs.multipleTable.toggleRowSelection(row);
+        },
         async PermsList() {
+            this.tableLoad = true;
             const resp = await getPermsList({
                 page:this.pages.curPage,
             });
@@ -255,6 +304,10 @@ export default {
 }
 </script>
 
+<!-- <style lang="scss" scoped>
+    @import '../../../public/style/perms.css';
+</style> -->
+
 <style lang="scss" scoped>
 .box{
     margin: 10px auto;
@@ -291,7 +344,13 @@ export default {
     // height: 238px !important;
     background-color: #f9f9f9;
 }
+:deep .el-dialog--center {
+    cursor: move;
+}
 :deep .el-dialog--center .el-dialog__footer {
     background-color: #f9f9f9;
+}
+:deep .el-table tr {
+    cursor: pointer;
 }
 </style>

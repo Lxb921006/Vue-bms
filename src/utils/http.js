@@ -6,16 +6,14 @@ import { Message } from 'element-ui'
 // 创建axios实例
 const instance = axios.create({
     baseURL: baseUrl,
-    timeout: 10000,
+    timeout: 580000,
 //   responseType: 'json',
 });
 
 instance.interceptors.request.use(config => {
     // 请求拦截逻辑写在这里
-
     return Promise.resolve(config)
 }, error => {
-
     return Promise.reject(error)
 });
 
@@ -25,7 +23,6 @@ instance.interceptors.request.use(config => {
 
 instance.interceptors.response.use(resp => {
     // 响应拦截逻辑写在这里
-
     return Promise.resolve(resp) // 异步调用方式将回调函数作为函数参数返回
 }, err => {
     switch (err.response.status) {
