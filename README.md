@@ -13,8 +13,6 @@
 5.操作日志  
 
 # 部分ui展示
-![user](user.png)  
-![perms](perms.png)  
 ![servers](servers.png)  
 
 # 演示地址
